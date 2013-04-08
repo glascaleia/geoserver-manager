@@ -20,7 +20,7 @@
 
 	<groupId>it.geosolutions</groupId>
 	<artifactId>geoserver-manager</artifactId>
-	<version>1.6-SNAPSHOT</version>
+	<version>1.6.x-enhanced</version>
 
 	<packaging>jar</packaging>
 
@@ -101,17 +101,15 @@
 	</ciManagement>
 
 	<distributionManagement>
-		<downloadUrl>http://maven.geo-solutions.it</downloadUrl>
-		<repository>
-			<uniqueVersion>false</uniqueVersion>
-			<id>geosolutions</id>
-			<url>ftp://maven.geo-solutions.it/</url>
-		</repository>
-		<site>
-			<id>demo.geosolutions</id>
-			<url>scp://demo.geo-solutions.it/var/www/share/github/gsman</url>
-		</site>
-	</distributionManagement>
+        <!--.................................. -->
+        <!-- geoSDI Repository -->
+        <!--.................................. -->
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>geosdi</id>
+            <url>ftp://repo.geosdi.org/</url>
+        </repository>
+    </distributionManagement>
 
 
 	<build>
@@ -250,38 +248,37 @@
 			<groupId>log4j</groupId> <artifactId>log4j</artifactId> <version>1.2.16</version> 
 			</dependency> 
 			
-		</dependency>-->
-		<!--================================================================= -->
-		<!-- TEST -->
-		<!--================================================================= -->
+        </dependency>-->
+        <!--================================================================= -->
+        <!-- TEST -->
+        <!--================================================================= -->
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>2.5.6.SEC02</version>
-			<scope>test</scope>
-			<exclusions>
-                                <exclusion>
-                                        <groupId>commons-logging</groupId>
-                                        <artifactId>commons-logging</artifactId>
-                                </exclusion>
-                        </exclusions>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>2.5.6.SEC02</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
-
