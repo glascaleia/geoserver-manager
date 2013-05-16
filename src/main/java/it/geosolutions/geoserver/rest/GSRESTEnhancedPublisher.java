@@ -193,7 +193,7 @@ public class GSRESTEnhancedPublisher {
             boolean override)
             throws IOException {
         boolean result = Boolean.FALSE;
-        String urlToCall = restURL + "/rest/datasecurity/saveF";
+        String urlToCall = restURL + "/rest/datasecurity/save";
         HttpPost post = new HttpPost(urlToCall);
         List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
         for (RESTDataAccessRule accessRule : accessRulesToSave) {
