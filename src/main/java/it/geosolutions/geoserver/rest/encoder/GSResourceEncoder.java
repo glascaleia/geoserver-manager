@@ -53,6 +53,7 @@ import org.jdom.filter.Filter;
 public abstract class GSResourceEncoder
 		extends PropertyXMLEncoder {
 	public final static String NAME = "name";
+	public final static String NATIVENAME = "nativeName";
 	public final static String METADATA="metadata";
 	public final static String KEYWORDS="keywords";
 	public final static String METADATALINKS="metadataLinks";
@@ -96,10 +97,26 @@ public abstract class GSResourceEncoder
 		metadata.add(key, dimensionInfo.getRoot());
 	}
 
-	public void setMetadata(String key, XmlElement dimensionInfo) {
-		metadata.set(key, dimensionInfo.getRoot());
-	}
+    /**
+     * @deprecated Use {@link #setMetadataDimension(String, GSDimensionInfoEncoder)} this method will be set as protected for internal use only
+     * @param key
+     * @param dimensionInfo
+     */
+    public void setMetadata(String key, XmlElement dimensionInfo) {
+        metadata.set(key, dimensionInfo.getRoot());
+    }
 	
+    /**
+     * @param key
+     * @param dimensionInfo
+     */
+    protected void addMetadataDimension(String key, GSDimensionInfoEncoder dimensionInfo) {
+        metadata.add(key, dimensionInfo.getRoot());
+    }
+
+    public void setMetadataDimension(String key, GSDimensionInfoEncoder dimensionInfo) {
+        metadata.set(key, dimensionInfo.getRoot());
+    }	
 
 	/**
 	 * @param key
@@ -160,8 +177,8 @@ public abstract class GSResourceEncoder
 	 */
 	public void addMetadataLinkInfo(String type, String metadataType,
 			String content) {
-		final GSMetadataLinkInfoEncoder mde = new GSMetadataLinkInfoEncoder();
-		mde.setup(type, metadataType, content);
+		final GSMetadataLinkInfoEncoder mde = new GSMetadataLinkInfoEncoder(
+				type, metadataType, content);
 		metadataLinksListEncoder.addContent(mde.getRoot());
 	}
 
@@ -241,6 +258,43 @@ public abstract class GSResourceEncoder
 		else
 			return null;
 	}
+	
+	
+	/**
+	 * Add the 'nativename' node with a text value from 'name'
+	 * 
+	 * 
+	 */
+	protected void addNativeName(final String nativename) {
+		add(NATIVENAME, nativename);
+	}
+
+	
+	/**
+	 * Set or modify the 'nativename' node with a text value from 'name'
+	 * 
+	 * @note if not specified, the nativeName will be set with the value of the
+	 *       'name' node.
+	 * 
+	 */
+	public void setNativeName(final String nativename) {
+		set(NATIVENAME, nativename);
+	}
+
+	
+	/**
+	 * Get the nativeName
+	 * 
+	 * @return
+	 */
+	public String getNativeName() {
+		final Element nameNode = ElementUtils.contains(getRoot(), NATIVENAME, 1);
+		if (nameNode != null)
+			return nameNode.getText();
+		else
+			return null;
+	}
+	
 	
     private final static String DESCRIPTION = "description";
 
