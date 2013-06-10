@@ -555,7 +555,7 @@ public class GeoServerCASRESTPublisher {
          * @return "featureTypes.{xml|html|...}" for DATASTORES,
          * "coverages.{xml|html|...}" otherwise.
          */
-        public static String getTypeNameWithFormat(GeoServerRESTPublisher.StoreType type, GeoServerRESTPublisher.Format format) {
+        public static String getTypeNameWithFormat(GeoServerCASRESTPublisher.StoreType type, GeoServerRESTPublisher.Format format) {
             return getTypeName(type) + "." + format;
         }
 
