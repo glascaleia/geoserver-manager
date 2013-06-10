@@ -94,6 +94,44 @@ public class GSRESTEnhancedPublisher {
                 new UsernamePasswordCredentials(this.gsuser,
                 this.gspass));
         httpClient.setCredentialsProvider(credsProvider);
+//        TargetAuthenticationStrategy authenticationStrategy = new TargetAuthenticationStrategy() {
+//            @Override
+//            public void authFailed(HttpHost authhost, AuthScheme authScheme, HttpContext context) {
+//                System.out.println("Auth Failed!!!");
+//                super.authFailed(authhost, authScheme, context);
+//            }
+//
+//            @Override
+//            public boolean isAuthenticationRequested(HttpHost authhost, HttpResponse response, HttpContext context) {
+//                System.out.println("Auth Required!!!");
+//                return super.isAuthenticationRequested(authhost, response, context); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
+//                System.out.println("Get Challenges!!!");
+//                return super.getChallenges(authhost, response, context); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
+//                System.out.println("Select!!!");
+//                return super.select(challenges, authhost, response, context); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            public void authSucceeded(HttpHost authhost, AuthScheme authScheme, HttpContext context) {
+//                System.out.println("Auth Succeded!!!");
+//                super.authSucceeded(authhost, authScheme, context); //To change body of generated methods, choose Tools | Templates.
+//            }
+//
+//            @Override
+//            protected boolean isCachable(AuthScheme authScheme) {
+//                System.out.println("IS Cacheable!!!");
+//                return super.isCachable(authScheme); //To change body of generated methods, choose Tools | Templates.
+//            }
+//        };
+//        httpClient.setTargetAuthenticationStrategy(authenticationStrategy);
     }
 
     public String removeGSRule(String rulePathToRemove)
@@ -232,6 +270,7 @@ public class GSRESTEnhancedPublisher {
         StringBuilder stringBuilder = new StringBuilder();
         int statusCodeReceived = response.getStatusLine().getStatusCode();
         //TODO: Why we receive 405??
+        logger.info("Status code received: " + statusCodeReceived);
         if (statusCodeReceived == HttpStatus.SC_METHOD_NOT_ALLOWED
                 || statusCodeReceived == HttpStatus.SC_OK
                 || statusCodeReceived == HttpStatus.SC_CREATED
@@ -245,11 +284,13 @@ public class GSRESTEnhancedPublisher {
                     stringBuilder.append(line);
                 }
             } catch (IOException e) {
-                throw new IOException("Error: " + e + " - " + stringBuilder.toString());
+                throw new IOException("Error Consuming HttpResponse on GSRESTEnhancedPublisher: "
+                        + e + " - " + stringBuilder.toString());
             } finally {
                 this.consumeResponseEntity(response.getEntity());
             }
-            throw new IllegalArgumentException("Error: " + stringBuilder.toString());
+            throw new IllegalArgumentException("Error Managing HttpResponse on GSRESTEnhancedPublisher: "
+                    + stringBuilder.toString());
         }
         this.consumeResponseEntity(response.getEntity());
         return result;

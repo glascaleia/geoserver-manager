@@ -1,29 +1,16 @@
 /*
- *  GeoServer-Manager - Simple Manager Library for GeoServer
- *  
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
- *  http://www.geo-solutions.it
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-package it.geosolutions.geoserver.rest;
+package it.geosolutions.geoserver.rest.cas;
 
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.StoreType.getTypeName;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod.EXTERNAL;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod.FILE;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod.external;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod.file;
+import static it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod.url;
 import it.geosolutions.geoserver.rest.decoder.RESTCoverageList;
 import it.geosolutions.geoserver.rest.decoder.RESTCoverageStore;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageGranulesList;
@@ -39,7 +26,6 @@ import it.geosolutions.geoserver.rest.encoder.GSWorkspaceEncoder;
 import it.geosolutions.geoserver.rest.encoder.coverage.GSCoverageEncoder;
 import it.geosolutions.geoserver.rest.encoder.feature.GSFeatureTypeEncoder;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -48,22 +34,16 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
-
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Connect to a GeoServer instance to publish or modify its contents via REST
- * API.
- * <P>
- * There are no modifiable instance fields, so all the calls are thread-safe.
- *
- * @author ETj (etj at geo-solutions.it)
- * @author Carlo Cancellieri - carlo.cancellieri@geo-solutions.it
+ * @author Nazzareno Sileno - CNR IMAA geoSDI Group
+ * @email nazzareno.sileno@geosdi.org
  */
-public class GeoServerRESTPublisher {
+public class GeoServerCASRESTPublisher {
 
     public static final String DEFAULT_CRS = "EPSG:4326";
     /**
@@ -74,20 +54,17 @@ public class GeoServerRESTPublisher {
      * GeoServer instance base URL. E.g.:
      * <TT>http://localhost:8080/geoserver</TT>.
      */
-    private String restURL;
+    private final String restURL;
     /**
      * GeoServer instance privileged username, with read & write permission on
      * REST API
      */
-    private String gsuser;
+    private final String gsuser;
     /**
      * GeoServer instance password for privileged username with r&w permission
      * on REST API
      */
-    private String gspass;
-
-    public GeoServerRESTPublisher() {
-    }
+    private final String gspass;
 
     /**
      * Creates a <TT>GeoServerRESTPublisher</TT> to connect against a GeoServer
@@ -98,8 +75,8 @@ public class GeoServerRESTPublisher {
      * @param username auth credential
      * @param password auth credential
      */
-    public GeoServerRESTPublisher(String restURL, String username, String password) {
-        this.restURL = HTTPUtils.decurtSlash(restURL);
+    public GeoServerCASRESTPublisher(String restURL, String username, String password) {
+        this.restURL = CASHTTPUtils.decurtSlash(restURL);
         this.gsuser = username;
         this.gspass = password;
     }
@@ -160,7 +137,7 @@ public class GeoServerRESTPublisher {
         bkpenc.setIncludeData(includedata);
         bkpenc.setIncludeGwc(includegwc);
         bkpenc.setIncludeLog(includelog);
-        final String result = HTTPUtils.post(bkpUrl.toString(), bkpenc.toString(), "text/xml",
+        final String result = CASHTTPUtils.post(bkpUrl.toString(), bkpenc.toString(), "text/xml",
                 gsuser, gspass);
 
         return result;
@@ -190,7 +167,7 @@ public class GeoServerRESTPublisher {
 
         final GSBackupEncoder bkpenc = new GSBackupEncoder(backupDir);
 
-        final String result = HTTPUtils.post(bkpUrl.toString(), bkpenc.toString(), "text/xml",
+        final String result = CASHTTPUtils.post(bkpUrl.toString(), bkpenc.toString(), "text/xml",
                 gsuser, gspass);
 
         return result;
@@ -220,7 +197,7 @@ public class GeoServerRESTPublisher {
         final String sUrl = restURL + "/rest/workspaces";
         final GSWorkspaceEncoder wsenc = new GSWorkspaceEncoder(workspace);
         final String wsxml = wsenc.toString();
-        final String result = HTTPUtils.postXml(sUrl, wsxml, gsuser, gspass);
+        final String result = CASHTTPUtils.postXml(sUrl, wsxml, gsuser, gspass);
         return result != null;
     }
 
@@ -263,7 +240,7 @@ public class GeoServerRESTPublisher {
         final String sUrl = restURL + "/rest/namespaces";
         final GSNamespaceEncoder nsenc = new GSNamespaceEncoder(prefix, uri);
         final String nsxml = nsenc.toString();
-        final String result = HTTPUtils.postXml(sUrl, nsxml, gsuser, gspass);
+        final String result = CASHTTPUtils.postXml(sUrl, nsxml, gsuser, gspass);
         return result != null;
     }
 
@@ -282,7 +259,7 @@ public class GeoServerRESTPublisher {
         final String sUrl = restURL + "/rest/namespaces/" + encode(prefix);
         final GSNamespaceEncoder nsenc = new GSNamespaceEncoder(prefix, uri);
         final String nsxml = nsenc.toString();
-        final String result = HTTPUtils.put(sUrl, nsxml, "application/xml", gsuser, gspass);
+        final String result = CASHTTPUtils.put(sUrl, nsxml, "application/xml", gsuser, gspass);
         return result != null;
     }
 
@@ -359,7 +336,7 @@ public class GeoServerRESTPublisher {
         if (name != null && !name.isEmpty()) {
             sUrl.append("?name=").append(name);
         }
-        final String result = HTTPUtils.post(sUrl.toString(), sldBody,
+        final String result = CASHTTPUtils.post(sUrl.toString(), sldBody,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
@@ -389,8 +366,8 @@ public class GeoServerRESTPublisher {
             sUrl += "?name=" + encode(name);
         }
         LOGGER.debug("POSTing new style " + name + " to " + sUrl);
-        String result = HTTPUtils
-                .post(sUrl, sldFile, Format.SLD.getContentType(), gsuser, gspass);
+        String result = CASHTTPUtils
+                .post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
         return result != null;
     }
 
@@ -421,7 +398,7 @@ public class GeoServerRESTPublisher {
         final StringBuilder sUrl = new StringBuilder(restURL);
         sUrl.append("/rest/styles/").append(encode(name));
 
-        final String result = HTTPUtils.put(sUrl.toString(), sldBody,
+        final String result = CASHTTPUtils.put(sUrl.toString(), sldBody,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
@@ -448,7 +425,7 @@ public class GeoServerRESTPublisher {
         final StringBuilder sUrl = new StringBuilder(restURL);
         sUrl.append("/rest/styles/").append(encode(name));
 
-        final String result = HTTPUtils.put(sUrl.toString(), sldFile,
+        final String result = CASHTTPUtils.put(sUrl.toString(), sldFile,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
 
@@ -486,7 +463,7 @@ public class GeoServerRESTPublisher {
             sUrl.append("?purge=true");
         }
 
-        return HTTPUtils.delete(sUrl.toString(), gsuser, gspass);
+        return CASHTTPUtils.delete(sUrl.toString(), gsuser, gspass);
     }
 
     /**
@@ -536,8 +513,8 @@ public class GeoServerRESTPublisher {
          * @param type
          * @return
          */
-        public static String getTypeName(StoreType type) {
-            return StoreType.getTypeNameWithFormat(type, Format.XML);
+        public static String getTypeName(GeoServerRESTPublisher.StoreType type) {
+            return GeoServerRESTPublisher.StoreType.getTypeNameWithFormat(type, GeoServerRESTPublisher.Format.XML);
         }
 
         /**
@@ -578,7 +555,7 @@ public class GeoServerRESTPublisher {
          * @return "featureTypes.{xml|html|...}" for DATASTORES,
          * "coverages.{xml|html|...}" otherwise.
          */
-        public static String getTypeNameWithFormat(StoreType type, Format format) {
+        public static String getTypeNameWithFormat(GeoServerRESTPublisher.StoreType type, GeoServerRESTPublisher.Format format) {
             return getTypeName(type) + "." + format;
         }
 
@@ -590,7 +567,7 @@ public class GeoServerRESTPublisher {
          * @return "featuretypes.{xml|html|...}" for DATASTORES,
          * "coverages.{xml|html|...}" otherwise.
          */
-        public String getTypeNameWithFormat(Format format) {
+        public String getTypeNameWithFormat(GeoServerRESTPublisher.Format format) {
             return getTypeName(this).toLowerCase() + "." + format;
         }
 
@@ -600,7 +577,7 @@ public class GeoServerRESTPublisher {
          * @param type the StoreType.
          * @return "featureTypes" for DATASTORES, "coverages" otherwise.
          */
-        public static String getTypeName(StoreType type) {
+        public static String getTypeName(GeoServerCASRESTPublisher.StoreType type) {
             switch (type) {
                 case COVERAGESTORES:
                     return "coverages"; // Format
@@ -617,7 +594,7 @@ public class GeoServerRESTPublisher {
          * @param type the StoreType.
          * @return "dataStore" for DATASTORES, "coverageStore" otherwise.
          */
-        public static String getType(StoreType type) {
+        public static String getType(GeoServerCASRESTPublisher.StoreType type) {
             switch (type) {
                 case COVERAGESTORES:
                     return "coverageStore"; // Format
@@ -842,9 +819,9 @@ public class GeoServerRESTPublisher {
      *         {@code extension}, {@code mimeType} or {@code uri} parameters are
      * {@code null}.
      */
-    private boolean createStore(String workspace, StoreType dsType, String storeName,
-            UploadMethod method, Enum extension, String mimeType, URI uri,
-            ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException,
+    private boolean createStore(String workspace, GeoServerRESTPublisher.StoreType dsType, String storeName,
+            GeoServerRESTPublisher.UploadMethod method, Enum extension, String mimeType, URI uri,
+            GeoServerRESTPublisher.ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException,
             IllegalArgumentException {
         if (workspace == null || dsType == null || storeName == null || method == null
                 || extension == null || mimeType == null || uri == null) {
@@ -866,17 +843,17 @@ public class GeoServerRESTPublisher {
 
         String sentResult = null;
 
-        if (method.equals(UploadMethod.FILE)) {
+        if (method.equals(GeoServerRESTPublisher.UploadMethod.FILE)) {
             final File file = new File(uri);
             if (!file.exists()) {
                 throw new FileNotFoundException("unable to locate file: " + file);
             }
-            sentResult = HTTPUtils.put(sbUrl.toString(), file, mimeType, gsuser, gspass);
-        } else if (method.equals(UploadMethod.EXTERNAL)) {
-            sentResult = HTTPUtils.put(sbUrl.toString(), uri.toString(), mimeType, gsuser, gspass);
-        } else if (method.equals(UploadMethod.URL)) {
+            sentResult = CASHTTPUtils.put(sbUrl.toString(), file, mimeType, gsuser, gspass);
+        } else if (method.equals(GeoServerRESTPublisher.UploadMethod.EXTERNAL)) {
+            sentResult = CASHTTPUtils.put(sbUrl.toString(), uri.toString(), mimeType, gsuser, gspass);
+        } else if (method.equals(GeoServerRESTPublisher.UploadMethod.URL)) {
             // TODO check
-            sentResult = HTTPUtils.put(sbUrl.toString(), uri.toString(), mimeType, gsuser, gspass);
+            sentResult = CASHTTPUtils.put(sbUrl.toString(), uri.toString(), mimeType, gsuser, gspass);
         }
 
         if (sentResult != null) {
@@ -921,10 +898,10 @@ public class GeoServerRESTPublisher {
      * @throws IllegalArgumentException if any of the mandatory {@code workspace}, {@code storeName}, {@code method}, {@code extension},
      *         {@code mimeType} or {@code uri} parameters are {@code null}.
      */
-    private boolean createDataStore(String workspace, String storeName, UploadMethod method,
-            DataStoreExtension extension, String mimeType, URI uri, ParameterConfigure configure,
+    private boolean createDataStore(String workspace, String storeName, GeoServerRESTPublisher.UploadMethod method,
+            GeoServerRESTPublisher.DataStoreExtension extension, String mimeType, URI uri, GeoServerRESTPublisher.ParameterConfigure configure,
             NameValuePair... params) throws FileNotFoundException, IllegalArgumentException {
-        return createStore(workspace, StoreType.DATASTORES, storeName, method, extension, mimeType,
+        return createStore(workspace, GeoServerRESTPublisher.StoreType.DATASTORES, storeName, method, extension, mimeType,
                 uri, configure, params);
     }
 
@@ -956,11 +933,11 @@ public class GeoServerRESTPublisher {
      * @throws IllegalArgumentException if any of the mandatory {@code workspace}, {@code storeName}, {@code method}, {@code extension},
      *         {@code mimeType} or {@code uri} parameters are {@code null}.
      */
-    private boolean createCoverageStore(String workspace, String storeName, UploadMethod method,
-            CoverageStoreExtension extension, String mimeType, URI uri,
-            ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException,
+    private boolean createCoverageStore(String workspace, String storeName, GeoServerRESTPublisher.UploadMethod method,
+            GeoServerRESTPublisher.CoverageStoreExtension extension, String mimeType, URI uri,
+            GeoServerRESTPublisher.ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException,
             IllegalArgumentException {
-        return createStore(workspace, StoreType.COVERAGESTORES, storeName, method, extension,
+        return createStore(workspace, GeoServerRESTPublisher.StoreType.COVERAGESTORES, storeName, method, extension,
                 mimeType, uri, configure, params);
     }
 
@@ -983,7 +960,7 @@ public class GeoServerRESTPublisher {
             GSPostGISDatastoreEncoder datastoreEncoder) {
         String sUrl = restURL + "/rest/workspaces/" + workspace + "/datastores/";
         String xml = datastoreEncoder.toString();
-        String result = HTTPUtils.postXml(sUrl, xml, gsuser, gspass);
+        String result = CASHTTPUtils.postXml(sUrl, xml, gsuser, gspass);
         return result != null;
     }
 
@@ -995,7 +972,7 @@ public class GeoServerRESTPublisher {
 
         final GSFeatureTypeEncoder fte = new GSFeatureTypeEncoder();
 
-        fte.setProjectionPolicy(ProjectionPolicy.REPROJECT_TO_DECLARED);
+        fte.setProjectionPolicy(GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED);
         fte.addKeyword("KEYWORD");
         fte.setTitle(layername);
         fte.setName(layername);
@@ -1038,7 +1015,7 @@ public class GeoServerRESTPublisher {
             return false;
         }
 
-        String configuredResult = HTTPUtils.postXml(postUrl.toString(), ftypeXml, this.gsuser,
+        String configuredResult = CASHTTPUtils.postXml(postUrl.toString(), ftypeXml, this.gsuser,
                 this.gspass);
         boolean published = configuredResult != null;
         boolean configured = false;
@@ -1091,7 +1068,7 @@ public class GeoServerRESTPublisher {
     public boolean publishShp(String workspace, String storename, String datasetname, File zipFile)
             throws FileNotFoundException, IllegalArgumentException {
         return publishShp(workspace, storename, new NameValuePair[0], datasetname,
-                UploadMethod.FILE, zipFile.toURI(), DEFAULT_CRS, null);
+                GeoServerRESTPublisher.UploadMethod.FILE, zipFile.toURI(), DEFAULT_CRS, null);
     }
 
     /**
@@ -1126,8 +1103,8 @@ public class GeoServerRESTPublisher {
      * {@code null}.
      */
     public boolean publishShp(String workspace, String storeName, NameValuePair[] storeParams,
-            String datasetName, UploadMethod method, URI shapefile, String srs, String nativeCRS,
-            ProjectionPolicy policy, String defaultStyle) throws FileNotFoundException,
+            String datasetName, GeoServerRESTPublisher.UploadMethod method, URI shapefile, String srs, String nativeCRS,
+            GSResourceEncoder.ProjectionPolicy policy, String defaultStyle) throws FileNotFoundException,
             IllegalArgumentException {
         if (workspace == null || storeName == null || shapefile == null || datasetName == null
                 || policy == null) {
@@ -1140,19 +1117,19 @@ public class GeoServerRESTPublisher {
         boolean srsNull = !(srs != null && srs.length() != 0);
         boolean nativeSrsNull = !(nativeCRS != null && nativeCRS.length() != 0);
         // if we are asking to use the reproject policy we must have the native crs
-        if (policy == ProjectionPolicy.REPROJECT_TO_DECLARED && (nativeSrsNull || srsNull)) {
+        if (policy == GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED && (nativeSrsNull || srsNull)) {
             throw new IllegalArgumentException(
                     "Unable to run: you can't ask GeoServer to reproject while not specifying a native CRS");
         }
 
         // if we are asking to use the NONE policy we must have the native crs.
-        if (policy == ProjectionPolicy.NONE && nativeSrsNull) {
+        if (policy == GSResourceEncoder.ProjectionPolicy.NONE && nativeSrsNull) {
             throw new IllegalArgumentException(
                     "Unable to run: you can't ask GeoServer to use a native srs which is null");
         }
 
         // if we are asking to use the reproject policy we must have the native crs
-        if (policy == ProjectionPolicy.FORCE_DECLARED && srsNull) {
+        if (policy == GSResourceEncoder.ProjectionPolicy.FORCE_DECLARED && srsNull) {
             throw new IllegalArgumentException(
                     "Unable to run: you can't force GeoServer to use an srs which is null");
         }
@@ -1175,7 +1152,7 @@ public class GeoServerRESTPublisher {
         }
         if (!createDataStore(workspace,
                 (storeName != null) ? storeName : FilenameUtils.getBaseName(shapefile.toString()),
-                method, DataStoreExtension.SHP, mimeType, shapefile, ParameterConfigure.NONE,
+                method, GeoServerRESTPublisher.DataStoreExtension.SHP, mimeType, shapefile, GeoServerRESTPublisher.ParameterConfigure.NONE,
                 storeParams)) {
             LOGGER.error("Unable to create data store for shapefile: " + shapefile);
             return false;
@@ -1198,7 +1175,7 @@ public class GeoServerRESTPublisher {
         }
         featureTypeEncoder.setProjectionPolicy(policy);
 
-        if (!createResource(workspace, StoreType.DATASTORES, storeName, featureTypeEncoder)) {
+        if (!createResource(workspace, GeoServerRESTPublisher.StoreType.DATASTORES, storeName, featureTypeEncoder)) {
             LOGGER.error("Unable to create a coverage store for coverage: " + shapefile);
             return false;
         }
@@ -1246,8 +1223,8 @@ public class GeoServerRESTPublisher {
      * use wrong ProjectionPolicy values.
      */
     public boolean publishShp(String workspace, String storeName, NameValuePair[] storeParams,
-            String datasetName, UploadMethod method, URI shapefile, String srs,
-            ProjectionPolicy policy, String defaultStyle) throws FileNotFoundException,
+            String datasetName, GeoServerRESTPublisher.UploadMethod method, URI shapefile, String srs,
+            GSResourceEncoder.ProjectionPolicy policy, String defaultStyle) throws FileNotFoundException,
             IllegalArgumentException {
         return publishShp(workspace, storeName, storeParams, datasetName, method, shapefile, srs,
                 null, policy, defaultStyle);
@@ -1281,10 +1258,10 @@ public class GeoServerRESTPublisher {
      * {@code null}.
      */
     public boolean publishShp(String workspace, String storeName, NameValuePair[] storeParams,
-            String datasetName, UploadMethod method, URI shapefile, String srs, String defaultStyle)
+            String datasetName, GeoServerRESTPublisher.UploadMethod method, URI shapefile, String srs, String defaultStyle)
             throws FileNotFoundException, IllegalArgumentException {
         return publishShp(workspace, storeName, storeParams, datasetName, method, shapefile, srs,
-                null, ProjectionPolicy.FORCE_DECLARED, defaultStyle);
+                null, GSResourceEncoder.ProjectionPolicy.FORCE_DECLARED, defaultStyle);
     }
 
     /**
@@ -1310,7 +1287,7 @@ public class GeoServerRESTPublisher {
             String srs, String defaultStyle) throws FileNotFoundException, IllegalArgumentException {
 
         return publishShp(workspace, storename, (NameValuePair[]) null, layerName,
-                UploadMethod.FILE, zipFile.toURI(), srs, defaultStyle);
+                GeoServerRESTPublisher.UploadMethod.FILE, zipFile.toURI(), srs, defaultStyle);
     }
 
     /**
@@ -1333,7 +1310,7 @@ public class GeoServerRESTPublisher {
     public boolean publishShp(String workspace, String storename, String layername, File zipFile,
             String srs) throws FileNotFoundException {
         return publishShp(workspace, storename, (NameValuePair[]) null, layername,
-                UploadMethod.FILE, zipFile.toURI(), srs, null);
+                GeoServerRESTPublisher.UploadMethod.FILE, zipFile.toURI(), srs, null);
     }
 
     /**
@@ -1362,7 +1339,7 @@ public class GeoServerRESTPublisher {
             String srs, NameValuePair... params) throws FileNotFoundException,
             IllegalArgumentException {
 
-        return publishShp(workspace, storename, params, layername, UploadMethod.FILE,
+        return publishShp(workspace, storename, params, layername, GeoServerRESTPublisher.UploadMethod.FILE,
                 zipFile.toURI(), srs, null);
     }
 
@@ -1387,21 +1364,21 @@ public class GeoServerRESTPublisher {
             throws FileNotFoundException {
 
         // Deduce upload method & mime type from resource syntax.
-        UploadMethod method = null;
+        GeoServerRESTPublisher.UploadMethod method = null;
         String mime = null;
         if (resource.getScheme().equals("file") || resource.isAbsolute() == false) {
             File f = new File(resource);
             if (f.exists() && f.isFile() && f.toString().endsWith(".zip")) {
-                method = UploadMethod.FILE;
+                method = GeoServerRESTPublisher.UploadMethod.FILE;
                 mime = "application/zip";
             } else if (f.isDirectory()) {
-                method = UploadMethod.EXTERNAL;
+                method = GeoServerRESTPublisher.UploadMethod.EXTERNAL;
                 mime = "text/plain";
             }
         } else {
             try {
                 if (resource.toURL() != null) {
-                    method = UploadMethod.URL;
+                    method = GeoServerRESTPublisher.UploadMethod.URL;
                     mime = "text/plain";
                 }
             } catch (MalformedURLException e) {
@@ -1412,8 +1389,8 @@ public class GeoServerRESTPublisher {
         }
 
         // Create store, upload data, and publish layers
-        return createStore(workspace, StoreType.DATASTORES, storeName, method,
-                DataStoreExtension.SHP, mime, resource, ParameterConfigure.ALL,
+        return createStore(workspace, GeoServerRESTPublisher.StoreType.DATASTORES, storeName, method,
+                GeoServerRESTPublisher.DataStoreExtension.SHP, mime, resource, GeoServerRESTPublisher.ParameterConfigure.ALL,
                 new NameValuePair[0]);
     }
 
@@ -1485,7 +1462,7 @@ public class GeoServerRESTPublisher {
          * @param f the format key.
          * @return The content-type (mime), or {@code null} if not in the enum.
          */
-        public static String getContentType(Format f) {
+        public static String getContentType(GeoServerCASRESTPublisher.Format f) {
             switch (f) {
                 case XML:
                     return "application/xml";
@@ -1537,15 +1514,15 @@ public class GeoServerRESTPublisher {
      * @return true if the operation completed successfully.
      */
     private boolean publishCoverage(String workspace, String coveragestore,
-            CoverageStoreExtension extension, String mimeType, File file,
-            ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
+            GeoServerRESTPublisher.CoverageStoreExtension extension, String mimeType, File file,
+            GeoServerRESTPublisher.ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
         /*
          * This is an example with cUrl:
          * 
          * {@code curl -u admin:geoserver -XPUT -H 'Content-type: application/zip' \ --data-binary @$ZIPFILE \ http://$GSIP:$GSPORT/$SERVLET
          * /rest/workspaces/$WORKSPACE/coveragestores /$COVERAGESTORE/file.worldimage
          */
-        return createCoverageStore(workspace, coveragestore, UploadMethod.FILE, extension,
+        return createCoverageStore(workspace, coveragestore, GeoServerRESTPublisher.UploadMethod.FILE, extension,
                 mimeType, file.toURI(), configure, params);
     }
 
@@ -1566,8 +1543,8 @@ public class GeoServerRESTPublisher {
      * @throws FileNotFoundException
      */
     private boolean publishExternalCoverage(String workspace, String coveragestore,
-            CoverageStoreExtension extension, String mimeType, File file,
-            ParameterConfigure configure, ParameterUpdate update) throws FileNotFoundException,
+            GeoServerRESTPublisher.CoverageStoreExtension extension, String mimeType, File file,
+            GeoServerRESTPublisher.ParameterConfigure configure, GeoServerRESTPublisher.ParameterUpdate update) throws FileNotFoundException,
             IllegalArgumentException {
         /*
          * Curl example:
@@ -1581,7 +1558,7 @@ public class GeoServerRESTPublisher {
         return createCoverageStore(
                 workspace,
                 coveragestore,
-                UploadMethod.EXTERNAL,
+                GeoServerRESTPublisher.UploadMethod.EXTERNAL,
                 extension,
                 mimeType,
                 file.toURI(),
@@ -1604,8 +1581,8 @@ public class GeoServerRESTPublisher {
      */
     public boolean publishGeoTIFF(String workspace, String storeName, File geotiff)
             throws FileNotFoundException {
-        return publishCoverage(workspace, storeName, CoverageStoreExtension.GEOTIFF,
-                "image/geotiff", geotiff, ParameterConfigure.FIRST, (NameValuePair[]) null);
+        return publishCoverage(workspace, storeName, GeoServerRESTPublisher.CoverageStoreExtension.GEOTIFF,
+                "image/geotiff", geotiff, GeoServerRESTPublisher.ParameterConfigure.FIRST, (NameValuePair[]) null);
     }
 
     /**
@@ -1631,8 +1608,8 @@ public class GeoServerRESTPublisher {
         return publishCoverage(
                 workspace,
                 (storeName != null) ? storeName : FilenameUtils.getBaseName(geotiff
-                .getAbsolutePath()), CoverageStoreExtension.GEOTIFF, "image/geotiff",
-                geotiff, ParameterConfigure.FIRST,
+                .getAbsolutePath()), GeoServerRESTPublisher.CoverageStoreExtension.GEOTIFF, "image/geotiff",
+                geotiff, GeoServerRESTPublisher.ParameterConfigure.FIRST,
                 (coverageName != null) ? new NameValuePair[]{new NameValuePair("coverageName",
             coverageName)} : (NameValuePair[]) null);
     }
@@ -1646,7 +1623,7 @@ public class GeoServerRESTPublisher {
      * @deprecated use the former method with bbox set to null.
      */
     public boolean publishGeoTIFF(String workspace, String storeName, String resourceName,
-            File geotiff, String srs, ProjectionPolicy policy, String defaultStyle)
+            File geotiff, String srs, GSResourceEncoder.ProjectionPolicy policy, String defaultStyle)
             throws FileNotFoundException, IllegalArgumentException {
         return publishGeoTIFF(workspace, storeName, resourceName, geotiff, srs, policy,
                 defaultStyle, null);
@@ -1672,7 +1649,7 @@ public class GeoServerRESTPublisher {
      *
      */
     public boolean publishGeoTIFF(String workspace, String storeName, String coverageName,
-            File geotiff, String srs, ProjectionPolicy policy, String defaultStyle, double[] bbox)
+            File geotiff, String srs, GSResourceEncoder.ProjectionPolicy policy, String defaultStyle, double[] bbox)
             throws FileNotFoundException, IllegalArgumentException {
         if (workspace == null || storeName == null || geotiff == null || coverageName == null
                 || srs == null || policy == null || defaultStyle == null) {
@@ -1682,8 +1659,8 @@ public class GeoServerRESTPublisher {
         if (!createCoverageStore(
                 workspace,
                 (storeName != null) ? storeName : FilenameUtils.getBaseName(geotiff
-                .getAbsolutePath()), UploadMethod.FILE, CoverageStoreExtension.GEOTIFF,
-                "image/geotiff", geotiff.toURI(), ParameterConfigure.NONE, (NameValuePair[]) null)) {
+                .getAbsolutePath()), GeoServerRESTPublisher.UploadMethod.FILE, GeoServerRESTPublisher.CoverageStoreExtension.GEOTIFF,
+                "image/geotiff", geotiff.toURI(), GeoServerRESTPublisher.ParameterConfigure.NONE, (NameValuePair[]) null)) {
             LOGGER.error("Unable to create coverage store for coverage: " + geotiff);
             return false;
         }
@@ -1726,7 +1703,7 @@ public class GeoServerRESTPublisher {
      * null.
      */
     public boolean publishExternalGeoTIFF(String workspace, String storeName, File geotiff,
-            String coverageName, String srs, ProjectionPolicy policy, String defaultStyle)
+            String coverageName, String srs, GSResourceEncoder.ProjectionPolicy policy, String defaultStyle)
             throws FileNotFoundException, IllegalArgumentException {
         if (workspace == null || storeName == null || geotiff == null || coverageName == null
                 || srs == null || policy == null || defaultStyle == null) {
@@ -1779,8 +1756,8 @@ public class GeoServerRESTPublisher {
 
         // create store
         final boolean store = publishExternalCoverage(workspace, storeName,
-                CoverageStoreExtension.GEOTIFF, "text/plain", geotiff, ParameterConfigure.NONE,
-                ParameterUpdate.OVERWRITE);
+                GeoServerRESTPublisher.CoverageStoreExtension.GEOTIFF, "text/plain", geotiff, GeoServerRESTPublisher.ParameterConfigure.NONE,
+                GeoServerRESTPublisher.ParameterUpdate.OVERWRITE);
         if (!store) {
             return null;
         }
@@ -1795,9 +1772,10 @@ public class GeoServerRESTPublisher {
 
         // create Layer
         if (configureLayer(workspace, coverageName, layerEncoder)) {
-            GeoServerRESTReader reader;
+            GeoServerCASRESTReader reader;
             try {
-                reader = new GeoServerRESTReader(this.restURL, this.gsuser, this.gspass);
+                reader = new GeoServerCASRESTReader(restURL, gsuser, gspass);
+                reader.setCasAssertion(CASHTTPUtils.getCasAssertion());
                 return reader.getCoverageStore(workspace, storeName);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -1821,7 +1799,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean publishWorldImage(String workspace, String coveragestore, File zipFile)
             throws FileNotFoundException {
-        return publishWorldImage(workspace, coveragestore, zipFile, ParameterConfigure.FIRST,
+        return publishWorldImage(workspace, coveragestore, zipFile, GeoServerRESTPublisher.ParameterConfigure.FIRST,
                 (NameValuePair) null);
     }
 
@@ -1843,8 +1821,8 @@ public class GeoServerRESTPublisher {
      * @return true if the operation completed successfully.
      */
     public boolean publishWorldImage(String workspace, String coveragestore, File zipFile,
-            ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
-        return publishCoverage(workspace, coveragestore, CoverageStoreExtension.WORLDIMAGE,
+            GeoServerRESTPublisher.ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
+        return publishCoverage(workspace, coveragestore, GeoServerRESTPublisher.CoverageStoreExtension.WORLDIMAGE,
                 "application/zip", zipFile, configure, params);
     }
 
@@ -1862,8 +1840,8 @@ public class GeoServerRESTPublisher {
      */
     public boolean publishImageMosaic(String workspace, String storeName, File zipFile)
             throws FileNotFoundException {
-        return publishCoverage(workspace, storeName, CoverageStoreExtension.IMAGEMOSAIC,
-                "application/zip", zipFile, ParameterConfigure.FIRST, (NameValuePair[]) null);
+        return publishCoverage(workspace, storeName, GeoServerRESTPublisher.CoverageStoreExtension.IMAGEMOSAIC,
+                "application/zip", zipFile, GeoServerRESTPublisher.ParameterConfigure.FIRST, (NameValuePair[]) null);
     }
 
     /**
@@ -1884,8 +1862,8 @@ public class GeoServerRESTPublisher {
      * @return true if the operation completed successfully.
      */
     public boolean publishImageMosaic(String workspace, String storeName, File zipFile,
-            ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
-        return publishCoverage(workspace, storeName, CoverageStoreExtension.IMAGEMOSAIC,
+            GeoServerRESTPublisher.ParameterConfigure configure, NameValuePair... params) throws FileNotFoundException {
+        return publishCoverage(workspace, storeName, GeoServerRESTPublisher.CoverageStoreExtension.IMAGEMOSAIC,
                 "application/zip", zipFile, configure, params);
     }
 
@@ -1901,7 +1879,7 @@ public class GeoServerRESTPublisher {
      * @throws FileNotFoundException
      */
     public RESTCoverageStore createExternaMosaicDatastore(String workspace, String storeName,
-            File mosaicDir, ParameterConfigure configure, ParameterUpdate update)
+            File mosaicDir, GeoServerRESTPublisher.ParameterConfigure configure, GeoServerRESTPublisher.ParameterUpdate update)
             throws FileNotFoundException {
 
         /*
@@ -1918,7 +1896,7 @@ public class GeoServerRESTPublisher {
         String sUrl = restURL + "/rest/workspaces/" + workspace + "/coveragestores/" + storeName
                 + "/external.imagemosaic?configure=" + configure.toString() + "&update="
                 + update.toString();
-        String sendResult = HTTPUtils.put(sUrl, mosaicDir.toURI().toString(), "text/plain", gsuser,
+        String sendResult = CASHTTPUtils.put(sUrl, mosaicDir.toURI().toString(), "text/plain", gsuser,
                 gspass);
         return RESTCoverageStore.build(sendResult);
     }
@@ -1991,7 +1969,7 @@ public class GeoServerRESTPublisher {
         }
 
         RESTCoverageStore store = createExternaMosaicDatastore(workspace, storeName, mosaicDir,
-                ParameterConfigure.NONE, ParameterUpdate.OVERWRITE);
+                GeoServerRESTPublisher.ParameterConfigure.NONE, GeoServerRESTPublisher.ParameterUpdate.OVERWRITE);
 
         if (store == null) {
             return false;
@@ -2047,7 +2025,7 @@ public class GeoServerRESTPublisher {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Going to delete " + "/rest/layers/" + fqLayerName);
             }
-            boolean layerDeleted = HTTPUtils
+            boolean layerDeleted = CASHTTPUtils
                     .delete(deleteLayerUrl.toExternalForm(), gsuser, gspass);
             if (!layerDeleted) {
                 LOGGER.warn("Could not delete layer '" + fqLayerName + "'");
@@ -2060,7 +2038,7 @@ public class GeoServerRESTPublisher {
                 LOGGER.debug("Going to delete " + "/rest/workspaces/" + workspace
                         + "/coveragestores/" + storename + "/coverages/" + layerName);
             }
-            boolean covDeleted = HTTPUtils.delete(deleteCovUrl.toExternalForm(), gsuser, gspass);
+            boolean covDeleted = CASHTTPUtils.delete(deleteCovUrl.toExternalForm(), gsuser, gspass);
             if (!covDeleted) {
                 LOGGER.warn("Could not delete coverage " + workspace + ":" + storename + "/"
                         + layerName + ", but layer was deleted.");
@@ -2108,7 +2086,7 @@ public class GeoServerRESTPublisher {
             }
             // delete related layer
             URL deleteLayerUrl = new URL(restURL + "/rest/layers/" + fqLayerName);
-            boolean layerDeleted = HTTPUtils
+            boolean layerDeleted = CASHTTPUtils
                     .delete(deleteLayerUrl.toExternalForm(), gsuser, gspass);
             if (!layerDeleted) {
                 LOGGER.warn("Could not delete layer '" + fqLayerName + "'");
@@ -2117,7 +2095,7 @@ public class GeoServerRESTPublisher {
             // delete the coverage
             URL deleteFtUrl = new URL(restURL + "/rest/workspaces/" + workspace + "/datastores/"
                     + storename + "/featuretypes/" + layerName);
-            boolean ftDeleted = HTTPUtils.delete(deleteFtUrl.toExternalForm(), gsuser, gspass);
+            boolean ftDeleted = CASHTTPUtils.delete(deleteFtUrl.toExternalForm(), gsuser, gspass);
             if (!ftDeleted) {
                 LOGGER.warn("Could not delete featuretype " + workspace + ":" + storename + "/"
                         + layerName + ", but layer was deleted.");
@@ -2187,7 +2165,7 @@ public class GeoServerRESTPublisher {
             }
             final URL deleteStore = new URL(url.toString());
 
-            boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
+            boolean deleted = CASHTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
             if (!deleted) {
                 LOGGER.warn("Could not delete datastore " + workspace + ":" + storename);
             } else {
@@ -2248,7 +2226,7 @@ public class GeoServerRESTPublisher {
             }
             final URL deleteStore = new URL(url.toString());
 
-            boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
+            boolean deleted = CASHTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
             if (!deleted) {
                 LOGGER.warn("Could not delete CoverageStore " + workspace + ":" + storename);
             } else {
@@ -2311,7 +2289,7 @@ public class GeoServerRESTPublisher {
                 url.append("?recurse=true");
             }
             final URL deleteUrl = new URL(url.toString());
-            boolean deleted = HTTPUtils.delete(deleteUrl.toExternalForm(), gsuser, gspass);
+            boolean deleted = CASHTTPUtils.delete(deleteUrl.toExternalForm(), gsuser, gspass);
             if (!deleted) {
                 LOGGER.warn("Could not delete Workspace " + workspace);
             } else {
@@ -2344,7 +2322,7 @@ public class GeoServerRESTPublisher {
 
         try {
             URL deleteUrl = new URL(url);
-            boolean deleted = HTTPUtils.delete(deleteUrl.toExternalForm(), gsuser, gspass);
+            boolean deleted = CASHTTPUtils.delete(deleteUrl.toExternalForm(), gsuser, gspass);
             if (!deleted) {
                 if (LOGGER.isWarnEnabled()) {
                     LOGGER.warn("Could not delete layergroup " + name);
@@ -2407,7 +2385,7 @@ public class GeoServerRESTPublisher {
 
         final String url = restURL + "/rest/layers/" + fqLayerName;
 
-        boolean result = HTTPUtils.delete(url, gsuser, gspass);
+        boolean result = CASHTTPUtils.delete(url, gsuser, gspass);
         if (result) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Layer successfully removed: " + fqLayerName);
@@ -2437,11 +2415,11 @@ public class GeoServerRESTPublisher {
      * @throws IllegalArgumentException
      * @throws MalformedURLException
      */
-    public boolean reloadStore(String workspace, final String storeName, StoreType storeType)
+    public boolean reloadStore(String workspace, final String storeName, GeoServerRESTPublisher.StoreType storeType)
             throws IllegalArgumentException, MalformedURLException {
-        final String url = HTTPUtils.append(this.restURL, "/rest/workspaces/", workspace, "/",
+        final String url = CASHTTPUtils.append(this.restURL, "/rest/workspaces/", workspace, "/",
                 storeType.toString(), "/", storeName, ".xml").toString();
-        final String store = HTTPUtils.get(url, this.gsuser, this.gspass);
+        final String store = CASHTTPUtils.get(url, this.gsuser, this.gspass);
 
         if (store != null) {
             String storeTag = storeType.getTypeName();
@@ -2460,7 +2438,7 @@ public class GeoServerRESTPublisher {
             int start = store.indexOf(startTag);
             String endTag = "</" + storeTag + ">";
             int stop = store.indexOf(endTag) + endTag.length();
-            return HTTPUtils.putXml(url, store.subSequence(0, start) + store.substring(stop),
+            return CASHTTPUtils.putXml(url, store.subSequence(0, start) + store.substring(stop),
                     this.gsuser, this.gspass) != null ? true : false;
         } else {
             return false;
@@ -2478,7 +2456,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean reload() {
         String sUrl = restURL + "/rest/reload";
-        String result = HTTPUtils.post(sUrl, "", "text/plain", gsuser, gspass);
+        String result = CASHTTPUtils.post(sUrl, "", "text/plain", gsuser, gspass);
         return result != null;
     }
 
@@ -2493,7 +2471,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean reset() {
         String sUrl = restURL + "/rest/reset";
-        String result = HTTPUtils.post(sUrl, "", "text/plain", gsuser, gspass);
+        String result = CASHTTPUtils.post(sUrl, "", "text/plain", gsuser, gspass);
         return result != null;
     }
 
@@ -2528,7 +2506,7 @@ public class GeoServerRESTPublisher {
         final String url = restURL + "/rest/layers/" + fqLayerName;
 
         String layerXml = layer.toString();
-        String sendResult = HTTPUtils.putXml(url, layerXml, gsuser, gspass);
+        String sendResult = CASHTTPUtils.putXml(url, layerXml, gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Layer successfully configured: " + fqLayerName);
@@ -2572,7 +2550,7 @@ public class GeoServerRESTPublisher {
 
         group.setName(name);
 
-        String sendResult = HTTPUtils.postXml(url, group.toString(), gsuser, gspass);
+        String sendResult = CASHTTPUtils.postXml(url, group.toString(), gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("LayerGroup successfully configured: " + name);
@@ -2613,7 +2591,7 @@ public class GeoServerRESTPublisher {
             url += "/workspaces/" + workspace + "/layergroups/" + name;
         }
 
-        String sendResult = HTTPUtils.putXml(url, group.toString(), gsuser, gspass);
+        String sendResult = CASHTTPUtils.putXml(url, group.toString(), gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("LayerGroup successfully configured: " + name);
@@ -2646,9 +2624,10 @@ public class GeoServerRESTPublisher {
             return false;
         }
         // retrieve coverage name
-        GeoServerRESTReader reader;
+        GeoServerCASRESTReader reader;
         try {
-            reader = new GeoServerRESTReader(restURL, gsuser, gspass);
+            reader = new GeoServerCASRESTReader(restURL, gsuser, gspass);
+            reader.setCasAssertion(CASHTTPUtils.getCasAssertion());
         } catch (MalformedURLException e) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(e.getLocalizedMessage(), e);
@@ -2685,7 +2664,7 @@ public class GeoServerRESTPublisher {
                 + "/coverages/" + cname + ".xml";
 
         final String xmlBody = ce.toString();
-        final String sendResult = HTTPUtils.putXml(url, xmlBody, gsuser, gspass);
+        final String sendResult = CASHTTPUtils.putXml(url, xmlBody, gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Coverage successfully configured " + wsname + ":" + csname + ":"
@@ -2722,7 +2701,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean createCoverage(final String wsname, final String storeName,
             final GSCoverageEncoder ce) throws IllegalArgumentException {
-        return createResource(wsname, StoreType.COVERAGESTORES, storeName, ce);
+        return createResource(wsname, GeoServerRESTPublisher.StoreType.COVERAGESTORES, storeName, ce);
     }
 
     /**
@@ -2748,14 +2727,14 @@ public class GeoServerRESTPublisher {
      * @return true if success
      * @throws IllegalArgumentException if arguments are null or empty
      */
-    private boolean createResource(String workspace, StoreType dsType, String storeName,
+    private boolean createResource(String workspace, GeoServerRESTPublisher.StoreType dsType, String storeName,
             GSResourceEncoder re) throws IllegalArgumentException {
         if (workspace == null || dsType == null || storeName == null || re == null) {
             throw new IllegalArgumentException("Null argument");
         }
         StringBuilder sbUrl = new StringBuilder(restURL).append("/rest/workspaces/")
                 .append(workspace).append("/").append(dsType).append("/").append(storeName)
-                .append("/").append(dsType.getTypeNameWithFormat(Format.XML));
+                .append("/").append(dsType.getTypeNameWithFormat(GeoServerRESTPublisher.Format.XML));
 
         final String resourceName = re.getName();
         if (resourceName == null) {
@@ -2764,7 +2743,7 @@ public class GeoServerRESTPublisher {
         }
 
         final String xmlBody = re.toString();
-        final String sendResult = HTTPUtils.postXml(sbUrl.toString(), xmlBody, gsuser, gspass);
+        final String sendResult = CASHTTPUtils.postXml(sbUrl.toString(), xmlBody, gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(dsType + " successfully created " + workspace + ":" + storeName + ":"

@@ -68,9 +68,12 @@ import org.slf4j.LoggerFactory;
 public class GeoServerRESTReader {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GeoServerRESTReader.class);
-    private final String baseurl;
-    private String username;
-    private String password;
+    protected String baseurl;
+    protected String username;
+    protected String password;
+
+    public GeoServerRESTReader() {
+    }
 
     /**
      * Creates a <TT>GeoServerRESTReader</TT> for a given GeoServer instance and
@@ -131,7 +134,7 @@ public class GeoServerRESTReader {
         this.password = password;
     }
 
-    private String load(String url) {
+    protected String load(String url) {
         LOGGER.info("Loading from REST path " + url);
         try {
             String response = HTTPUtils.get(baseurl + url, username, password);
@@ -143,7 +146,7 @@ public class GeoServerRESTReader {
         return null;
     }
 
-    private String loadFullURL(String url) {
+    protected String loadFullURL(String url) {
         LOGGER.info("Loading from REST path " + url);
         try {
             String response = HTTPUtils.get(url, username, password);

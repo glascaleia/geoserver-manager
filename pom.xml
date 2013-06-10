@@ -205,6 +205,14 @@
 
 	<dependencies>
 
+                    <!-- CAS -->
+        <dependency>
+            <groupId>org.jasig.cas.client</groupId>
+            <artifactId>cas-client-core</artifactId>
+            <version>3.2.1</version>
+            <type>jar</type>
+        </dependency>
+            
                     <!-- HttpComponents -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

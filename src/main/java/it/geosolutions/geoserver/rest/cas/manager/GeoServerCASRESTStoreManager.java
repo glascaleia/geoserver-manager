@@ -22,10 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geoserver.rest.manager;
+package it.geosolutions.geoserver.rest.cas.manager;
 
+import it.geosolutions.geoserver.rest.manager.*;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher.Format;
-import it.geosolutions.geoserver.rest.HTTPUtils;
+import it.geosolutions.geoserver.rest.cas.CASHTTPUtils;
 import it.geosolutions.geoserver.rest.encoder.GSAbstractStoreEncoder;
 import it.geosolutions.geoserver.rest.encoder.datastore.GSAbstractDatastoreEncoder;
 
@@ -40,7 +41,7 @@ import java.net.URL;
  *
  * @author Carlo Cancellieri - carlo.cancellieri@geo-solutions.it
  */
-public class GeoServerRESTStoreManager extends GeoServerRESTAbstractManager {
+public class GeoServerCASRESTStoreManager extends GeoServerRESTAbstractManager {
 
     /**
      * Default constructor.
@@ -51,20 +52,9 @@ public class GeoServerRESTStoreManager extends GeoServerRESTAbstractManager {
      * @throws MalformedURLException
      * @throws IllegalArgumentException
      */
-    public GeoServerRESTStoreManager(URL restURL, String username, String password)
+    public GeoServerCASRESTStoreManager(URL restURL, String username, String password)
             throws IllegalArgumentException, MalformedURLException {
         super(restURL, username, password);
-    }
-
-    /**
-     * @deprecated This constructor is only for aop scope
-     *
-     * @throws IllegalArgumentException
-     * @throws MalformedURLException
-     */
-    @Deprecated
-    public GeoServerRESTStoreManager() throws IllegalArgumentException, MalformedURLException {
-        super(new URL("http://localhost"), "", "");
     }
 
     /**
@@ -78,9 +68,11 @@ public class GeoServerRESTStoreManager extends GeoServerRESTAbstractManager {
      * <TT>false</TT> otherwise
      */
     public boolean create(String workspace, GSAbstractStoreEncoder store) {
-        String sUrl = HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), ".", Format.XML.toString()).toString();
+        System.out.println("Create operation: ");
+        System.out.println(restURL);
+        String sUrl = CASHTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), ".", Format.XML.toString()).toString();
         String xml = store.toString();
-        String result = HTTPUtils.postXml(sUrl, xml, gsuser, gspass);
+        String result = CASHTTPUtils.postXml(sUrl, xml, gsuser, gspass);
         return result != null;
     }
 
@@ -94,10 +86,10 @@ public class GeoServerRESTStoreManager extends GeoServerRESTAbstractManager {
      * <TT>false</TT> otherwise
      */
     public boolean update(String workspace, GSAbstractStoreEncoder store) {
-        String sUrl = HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), "/",
+        String sUrl = CASHTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), "/",
                 store.getName(), ".", Format.XML.toString()).toString();
         String xml = store.toString();
-        String result = HTTPUtils.putXml(sUrl, xml, gsuser, gspass);
+        String result = CASHTTPUtils.putXml(sUrl, xml, gsuser, gspass);
         return result != null;
     }
 
@@ -117,13 +109,13 @@ public class GeoServerRESTStoreManager extends GeoServerRESTAbstractManager {
 //            if (workspace.isEmpty() || storename.isEmpty())
 //                throw new IllegalArgumentException("Arguments may not be empty!");
 
-        final StringBuilder url = HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), "/", store.getName());
+        final StringBuilder url = CASHTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/", store.getStoreType().toString(), "/", store.getName());
         if (recurse) {
             url.append("?recurse=true");
         }
         final URL deleteStore = new URL(url.toString());
 
-        boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
+        boolean deleted = CASHTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
 //            if (!deleted) {
 //                LOGGER.warn("Could not delete CoverageStore " + workspace + ":" + storename);
 //            } else {
