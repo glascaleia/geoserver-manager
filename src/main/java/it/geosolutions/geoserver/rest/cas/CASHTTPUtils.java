@@ -24,7 +24,6 @@
  */
 package it.geosolutions.geoserver.rest.cas;
 
-import it.geosolutions.geoserver.rest.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CASHTTPUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CASHTTPUtils.class);
     private static Assertion casAssertion;
 
     public static Assertion getCasAssertion() {
@@ -70,7 +69,7 @@ public class CASHTTPUtils {
         CASHTTPUtils.casAssertion = casAssertion;
     }
 
-    private static String appendProxyTicketToURL(String url) {
+    public static String appendProxyTicketToURL(String url) {
         String proxyTicket = casAssertion.getPrincipal().getProxyTicketFor(url);
         if (proxyTicket == null || proxyTicket.isEmpty()) {
             throw new IllegalArgumentException("*********************** "
@@ -78,7 +77,7 @@ public class CASHTTPUtils {
         }
         try {
             char parameterSeparator = '?';
-            if(url.contains("?")){
+            if (url.contains("?")) {
                 parameterSeparator = '&';
             }
             url += parameterSeparator + "ticket=" + URLEncoder.
@@ -87,6 +86,20 @@ public class CASHTTPUtils {
             LOGGER.error("Error on encoding proxy ticket", ex);
         }
         return url;
+    }
+
+    public static String generateProxyTicketForDestinationURL(String url) {
+        String proxyTicket = casAssertion.getPrincipal().getProxyTicketFor(url);
+        if (proxyTicket == null || proxyTicket.isEmpty()) {
+            throw new IllegalArgumentException("*********************** "
+                    + "Impossible to obtain proxy ticket for URL: " + url);
+        }
+        try {
+            proxyTicket = URLEncoder.encode(proxyTicket, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.error("Error on encoding proxy ticket", ex);
+        }
+        return proxyTicket;
     }
 
     /**
@@ -329,9 +342,7 @@ public class CASHTTPUtils {
             if (requestEntity != null) {
                 httpMethod.setRequestEntity(requestEntity);
             }
-            System.out.println("Executing methodddddd ");
             int status = client.executeMethod(httpMethod);
-            System.out.println("Method executed");
 
             switch (status) {
                 case HttpURLConnection.HTTP_OK:

@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.geosolutions.geoserver.rest;
+package it.geosolutions.geoserver.rest.cas;
 
+import it.geosolutions.geoserver.rest.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Nazzareno Sileno - CNR IMAA geoSDI Group
  * @email nazzareno.sileno@geosdi.org
  */
-public class GSRESTEnhancedReader {
+public class GSRESTEnhancedCASReader {
 
     /**
      * The logger for this class
@@ -64,14 +65,14 @@ public class GSRESTEnhancedReader {
      * @param username auth credential
      * @param password auth credential
      */
-    public GSRESTEnhancedReader(String restURL, String username, String password) {
-        this.restURL = HTTPUtils.decurtSlash(restURL);
+    public GSRESTEnhancedCASReader(String restURL, String username, String password) {
+        this.restURL = CASHTTPUtils.decurtSlash(restURL);
         this.gsuser = username;
         this.gspass = password;
         this.afterPropertiesSet();
     }
 
-    public GSRESTEnhancedReader() {
+    public GSRESTEnhancedCASReader() {
     }
 
     private void afterPropertiesSet() {
@@ -96,7 +97,7 @@ public class GSRESTEnhancedReader {
         String urlToCall = restURL + "/rest/services/load/all";
         String jsonToParse = null;
         try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
+            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         } catch (MalformedURLException murle) {
             logger.error("Malformed URLS Exception: " + murle);
         }
@@ -110,7 +111,7 @@ public class GSRESTEnhancedReader {
         String urlToCall = restURL + "/rest/servicesecurity/load/all";
         String jsonToParse = null;
         try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
+            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         } catch (MalformedURLException murle) {
             logger.error("Malformed URLS Exception: " + murle);
         }
@@ -124,7 +125,7 @@ public class GSRESTEnhancedReader {
         String urlToCall = restURL + "/rest/datasecurity/load/all";
         String jsonToParse = null;
         try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
+            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         } catch (MalformedURLException murle) {
             logger.error("Malformed URLS Exception: " + murle);
         }
@@ -162,7 +163,7 @@ public class GSRESTEnhancedReader {
         String urlToCall = this.restURL + "/rest/services/load/methods?serviceName=" + serviceName.trim();
         String jsonToParse = null;
         try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
+            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         } catch (MalformedURLException murle) {
             logger.error("Malformed URLS Exception: " + murle);
         }

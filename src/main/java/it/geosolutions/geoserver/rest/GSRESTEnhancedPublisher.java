@@ -51,17 +51,17 @@ public class GSRESTEnhancedPublisher {
      * GeoServer instance base URL. E.g.:
      * <TT>http://localhost:8080/geoserver</TT>.
      */
-    private final String restURL;
+    private String restURL;
     /**
      * GeoServer instance privileged username, with read & write permission on
      * REST API
      */
-    private final String gsuser;
+    private String gsuser;
     /**
      * GeoServer instance password for privileged username with r&w permission
      * on REST API
      */
-    private final String gspass;
+    private String gspass;
     //
     private DefaultHttpClient httpClient;
     private HttpContext localContext;
@@ -80,6 +80,9 @@ public class GSRESTEnhancedPublisher {
         this.gsuser = username;
         this.gspass = password;
         this.afterPropertiesSet();
+    }
+
+    public GSRESTEnhancedPublisher() {
     }
 
     private void afterPropertiesSet() {
