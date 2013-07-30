@@ -34,12 +34,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
@@ -133,7 +130,6 @@ public class CASHTTPUtils {
         HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         try {
-            setAuth(client, url, username, pw);
             httpMethod = new GetMethod(url);
             connectionManager.getParams().setConnectionTimeout(5000);
             int status = client.executeMethod(httpMethod);
@@ -337,7 +333,6 @@ public class CASHTTPUtils {
         HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         try {
-            setAuth(client, url, username, pw);
             connectionManager.getParams().setConnectionTimeout(5000);
             if (requestEntity != null) {
                 httpMethod.setRequestEntity(requestEntity);
@@ -382,7 +377,6 @@ public class CASHTTPUtils {
         HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         try {
-            setAuth(client, url, user, pw);
             httpMethod = new DeleteMethod(url);
             connectionManager.getParams().setConnectionTimeout(5000);
             int status = client.executeMethod(httpMethod);
@@ -435,7 +429,6 @@ public class CASHTTPUtils {
         HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         try {
-            setAuth(client, url, username, pw);
             httpMethod = new GetMethod(url);
             connectionManager.getParams().setConnectionTimeout(2000);
             int status = client.executeMethod(httpMethod);
@@ -475,7 +468,6 @@ public class CASHTTPUtils {
         HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         try {
-            setAuth(client, url, username, pw);
             httpMethod = new GetMethod(url);
             connectionManager.getParams().setConnectionTimeout(2000);
             int status = client.executeMethod(httpMethod);
@@ -497,24 +489,6 @@ public class CASHTTPUtils {
                 httpMethod.releaseConnection();
             }
             connectionManager.closeIdleConnections(0);
-        }
-    }
-
-    private static void setAuth(HttpClient client, String url, String username, String pw)
-            throws MalformedURLException {
-        URL u = new URL(url);
-        if (username != null && pw != null) {
-            Credentials defaultcreds = new UsernamePasswordCredentials(username, pw);
-            client.getState().setCredentials(new AuthScope(u.getHost(), u.getPort()), defaultcreds);
-            client.getParams().setAuthenticationPreemptive(true); // GS2 by
-            // default
-            // always
-            // requires
-            // authentication
-        } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Not setting credentials to access to " + url);
-            }
         }
     }
 
