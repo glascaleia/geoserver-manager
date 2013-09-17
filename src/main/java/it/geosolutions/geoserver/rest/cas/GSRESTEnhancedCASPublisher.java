@@ -70,12 +70,7 @@ public class GSRESTEnhancedCASPublisher {
             throws MalformedURLException {
         String result = null;
         String urlToCall = this.restURL + "/rest/datasecurity/remove/" + rulePathToRemove;
-        try {
-            result = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Error on removing GSRule: " + murle.getMessage());
-            throw new MalformedURLException("Remove GS Rule Error: " + murle);
-        }
+        result = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         return result;
     }
 

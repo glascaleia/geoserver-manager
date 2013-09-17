@@ -22,75 +22,77 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geoserver.rest;
+package it.geosolutions.geoserver.rest.cas;
 
+import it.geosolutions.geoserver.rest.cas.manager.GeoServerCASRESTStoreManager;
+import it.geosolutions.geoserver.rest.cas.manager.GeoServerCASRESTStyleManager;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTAbstractManager;
-import it.geosolutions.geoserver.rest.manager.GeoServerRESTStoreManager;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager;
-import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.jasig.cas.client.validation.Assertion;
 
 /**
  * <i>The</i> single entry point to all of geoserver-manager functionality.
- * 
+ *
  * Instance this one, and use getters to use different components. These are:
  * <ul>
  * <li>getReader() simple, high-level access methods.
  * <li>getPublisher() simple, high-level pubhish methods.
  * <li>get<i>Foo</i>Manager, full-fledged management of catalog objects.
  * </ul>
- * 
+ *
  * @author Oscar Fonts
  * @author Carlo Cancellieri - carlo.cancellieri@geo-solutions.it
  */
-public class GeoServerRESTManager extends GeoServerRESTAbstractManager {
+public class GeoServerCASRESTManager extends GeoServerRESTAbstractManager {
 
-    private final GeoServerRESTPublisher publisher;
-    private final GeoServerRESTReader reader;
-
-    private final GeoServerRESTStoreManager storeManager;
-    private final GeoServerRESTStyleManager styleManager;
-    
+    private final GeoServerCASRESTPublisher publisher;
+    private final GeoServerCASRESTReader reader;
+    private final GeoServerCASRESTStoreManager storeManager;
+    private final GeoServerCASRESTStyleManager styleManager;
     private final GeoServerRESTStructuredGridCoverageReaderManager structuredGridCoverageReader;
+    private static Assertion casAssertion;
 
     /**
      * Default constructor.
-     * 
+     *
      * Indicates connection parameters to remote GeoServer instance.
-     * 
+     *
      * @param restURL GeoServer REST API endpoint
      * @param username GeoServer REST API authorized username
      * @param password GeoServer REST API password for the former username
-     * @throws MalformedURLException {@link GeoServerRESTAbstractManager#GeoServerRESTAbstractManager(URL, String, String)}
-     * @throws IllegalArgumentException {@link GeoServerRESTAbstractManager#GeoServerRESTAbstractManager(URL, String, String)}
+     * @throws MalformedURLException
+     * {@link GeoServerRESTAbstractManager#GeoServerRESTAbstractManager(URL, String, String)}
+     * @throws IllegalArgumentException
+     * {@link GeoServerRESTAbstractManager#GeoServerRESTAbstractManager(URL, String, String)}
      */
-    public GeoServerRESTManager(URL restURL, String username, String password)
+    public GeoServerCASRESTManager(URL restURL, String username, String password)
             throws IllegalArgumentException {
         super(restURL, username, password);
 
         // Internal publisher and reader, provide simple access methods.
-        publisher = new GeoServerRESTPublisher(restURL.toString(), username, password);
-        reader = new GeoServerRESTReader(restURL, username, password);
+        publisher = new GeoServerCASRESTPublisher(restURL.toString(), username, password);
+        reader = new GeoServerCASRESTReader(restURL, username, password);
         structuredGridCoverageReader = new GeoServerRESTStructuredGridCoverageReaderManager(restURL, username, password);
-        storeManager = new GeoServerRESTStoreManager(restURL, gsuser, gspass);
-        styleManager = new GeoServerRESTStyleManager(restURL, gsuser, gspass);
+        storeManager = new GeoServerCASRESTStoreManager(restURL, gsuser, gspass);
+        styleManager = new GeoServerCASRESTStyleManager(restURL, gsuser, gspass);
     }
 
-    public GeoServerRESTPublisher getPublisher() {
+    public GeoServerCASRESTPublisher getPublisher() {
         return publisher;
     }
 
-    public GeoServerRESTReader getReader() {
+    public GeoServerCASRESTReader getReader() {
         return reader;
     }
 
-    public GeoServerRESTStoreManager getStoreManager() {
+    public GeoServerCASRESTStoreManager getStoreManager() {
         return storeManager;
     }
 
-    public GeoServerRESTStyleManager getStyleManager() {
+    public GeoServerCASRESTStyleManager getStyleManager() {
         return styleManager;
     }
 
@@ -98,4 +100,15 @@ public class GeoServerRESTManager extends GeoServerRESTAbstractManager {
         return structuredGridCoverageReader;
     }
 
+    public Assertion getCasAssertion() {
+        return casAssertion;
+    }
+
+    public void setCasAssertion(Assertion casAssertion) {
+        GeoServerCASRESTManager.casAssertion = casAssertion;
+        styleManager.setCasAssertion(casAssertion);
+        reader.setCasAssertion(casAssertion);
+        styleManager.setCasAssertion(casAssertion);
+        CASHTTPUtils.setCasAssertion(casAssertion);
+    }
 }

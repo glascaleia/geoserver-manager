@@ -96,11 +96,7 @@ public class GSRESTEnhancedCASReader {
     public String loadGSServices() {
         String urlToCall = restURL + "/rest/services/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -110,11 +106,7 @@ public class GSRESTEnhancedCASReader {
     public String loadAllGSServiceAccessRules() {
         String urlToCall = restURL + "/rest/servicesecurity/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -124,11 +116,7 @@ public class GSRESTEnhancedCASReader {
     public String loadAllGSDataSecurityRules() {
         String urlToCall = restURL + "/rest/datasecurity/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -162,11 +150,7 @@ public class GSRESTEnhancedCASReader {
 //        }
         String urlToCall = this.restURL + "/rest/services/load/methods?serviceName=" + serviceName.trim();
         String jsonToParse = null;
-        try {
-            jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = CASHTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.info("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));

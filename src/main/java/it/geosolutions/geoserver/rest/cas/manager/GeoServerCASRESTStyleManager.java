@@ -22,15 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geoserver.rest.manager;
+package it.geosolutions.geoserver.rest.cas.manager;
 
+import it.geosolutions.geoserver.rest.manager.*;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.HTTPUtils;
+import it.geosolutions.geoserver.rest.cas.CASHTTPUtils;
 import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
 import java.io.File;
 import java.net.URL;
 import java.net.URLEncoder;
+import org.jasig.cas.client.validation.Assertion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +40,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
+public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GeoServerRESTStyleManager.class);
-    
+    private Assertion casAssertion;
+
     /**
      * Default constructor.
      *
@@ -49,20 +52,23 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @param username GeoServer REST API authorized username
      * @param password GeoServer REST API password for the former username
      */
-    public GeoServerRESTStyleManager(URL restURL, String username, String password)
+    public GeoServerCASRESTStyleManager(URL restURL, String username, String password)
             throws IllegalArgumentException {
         super(restURL, username, password);
     }
 
     /**
      * Check if a Style exists in the configured GeoServer instance.
+     *
      * @param name the name of the style to check for.
      * @return <TT>true</TT> on HTTP 200, <TT>false</TT> on HTTP 404
-     * @throws RuntimeException if any other HTTP code than 200 or 404 was retrieved.
+     * @throws RuntimeException if any other HTTP code than 200 or 404 was
+     * retrieved.
      */
+    @Override
     public boolean existsStyle(String name) throws RuntimeException {
         String url = buildXmlUrl(null, name);
-        return HTTPUtils.exists(url, gsuser, gspass);
+        return CASHTTPUtils.exists(url, gsuser, gspass);
     }
 
     /**
@@ -70,49 +76,51 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return summary info about Styles as a {@link RESTStyleList}
      */
+    @Override
     public RESTStyleList getStyles() {
         String url = "/rest/styles.xml";
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Styles list from " + url);
         }
 
-        String response = HTTPUtils.get(gsBaseUrl + url, gsuser, gspass);
+        String response = CASHTTPUtils.get(gsBaseUrl + url, gsuser, gspass);
         return RESTStyleList.build(response);
     }
 
+    @Override
     public RESTStyle getStyle(String name) {
         String url = buildXmlUrl(null, name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Style " + name + " from " + url);
         }
 
-        String response = HTTPUtils.get(url, gsuser, gspass);
+        String response = CASHTTPUtils.get(url, gsuser, gspass);
         return RESTStyle.build(response);
     }
 
     /**
      * Get the SLD body of a Style.
      */
+    @Override
     public String getSLD(String styleName) {
         String url = buildUrl(null, styleName, ".sld");
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving SLD body from " + url);
         }
-        return HTTPUtils.get( url, gsuser, gspass);
+        return CASHTTPUtils.get(url, gsuser, gspass);
     }
-
 
     //=========================================================================
     // Workspaces
     //=========================================================================
-
     /**
      *
      * @since GeoServer 2.2
      */
+    @Override
     public boolean existsStyle(String workspace, String name) {
         String url = buildXmlUrl(workspace, name);
-        return HTTPUtils.exists(url, gsuser, gspass);
+        return CASHTTPUtils.exists(url, gsuser, gspass);
     }
 
     /**
@@ -121,13 +129,14 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return summary info about Styles as a {@link RESTStyleList}
      * @since GeoServer 2.2
      */
+    @Override
     public RESTStyleList getStyles(String workspace) {
-        String url = "/rest/workspaces/"+workspace+"/styles.xml";
+        String url = "/rest/workspaces/" + workspace + "/styles.xml";
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Styles list from " + url);
         }
 
-        String response = HTTPUtils.get(gsBaseUrl + url, gsuser, gspass);
+        String response = CASHTTPUtils.get(gsBaseUrl + url, gsuser, gspass);
         return RESTStyleList.build(response);
     }
 
@@ -135,32 +144,34 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @since GeoServer 2.2
      */
+    @Override
     public RESTStyle getStyle(String workspace, String name) {
         String url = buildXmlUrl(workspace, name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Style " + name + " from " + url);
         }
 
-        String response = HTTPUtils.get(url, gsuser, gspass);
+        String response = CASHTTPUtils.get(url, gsuser, gspass);
         return RESTStyle.build(response);
     }
 
     /**
      * Get the SLD body of a Style.
+     *
      * @since GeoServer 2.2
      */
+    @Override
     public String getSLD(String workspace, String name) {
         String url = buildUrl(workspace, name, ".sld");
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving SLD body from " + url);
         }
-        return HTTPUtils.get(url, gsuser, gspass);
+        return CASHTTPUtils.get(url, gsuser, gspass);
     }
 
     //=========================================================================
     // Publishing
     //=========================================================================
-
     /**
      * Store and publish a Style.
      *
@@ -168,6 +179,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
+    @Override
     public boolean publishStyle(String sldBody) {
         /*
          * This is the equivalent call with cUrl:
@@ -194,6 +206,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @throws IllegalArgumentException if the style body is null or empty.
      */
+    @Override
     public boolean publishStyle(final String sldBody, final String name)
             throws IllegalArgumentException {
         /*
@@ -208,7 +221,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
 
         String sUrl = buildPostUrl(null, name);
 
-        final String result = HTTPUtils.post(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
+        final String result = CASHTTPUtils.post(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
 
@@ -219,6 +232,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
+    @Override
     public boolean publishStyle(File sldFile) {
         return publishStyle(sldFile, null);
     }
@@ -231,10 +245,11 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
+    @Override
     public boolean publishStyle(File sldFile, String name) {
         String sUrl = buildPostUrl(null, name);
         LOGGER.debug("POSTing new style " + name + " to " + sUrl);
-        String result = HTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
+        String result = CASHTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
         return result != null;
     }
 
@@ -245,8 +260,10 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @param name the Style name to update.
      *
      * @return <TT>true</TT> if the operation completed successfully.
-     * @throws IllegalArgumentException if the style body or name are null or empty.
+     * @throws IllegalArgumentException if the style body or name are null or
+     * empty.
      */
+    @Override
     public boolean updateStyle(final String sldBody, final String name)
             throws IllegalArgumentException {
         /*
@@ -263,7 +280,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
 
         final String sUrl = buildUrl(null, name, null);
 
-        final String result = HTTPUtils.put(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
+        final String result = CASHTTPUtils.put(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
 
@@ -274,8 +291,10 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @param name the Style name.
      *
      * @return <TT>true</TT> if the operation completed successfully.
-     * @throws IllegalArgumentException if the sldFile file or name are null or name is empty.
+     * @throws IllegalArgumentException if the sldFile file or name are null or
+     * name is empty.
      */
+    @Override
     public boolean updateStyle(final File sldFile, final String name)
             throws IllegalArgumentException {
 
@@ -287,7 +306,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
 
         final String sUrl = buildUrl(null, name, null);
 
-        final String result = HTTPUtils.put(sUrl, sldFile,
+        final String result = CASHTTPUtils.put(sUrl, sldFile,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
 
@@ -296,7 +315,8 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
     /**
      * Remove a Style.
      * <P>
-     * The Style will be unpublished, and (optionally) the SLD file will be removed.
+     * The Style will be unpublished, and (optionally) the SLD file will be
+     * removed.
      *
      * @param styleName the name of the Style to remove.
      * @param purge remove the related SLD file from disk.
@@ -304,17 +324,20 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @throws IllegalArgumentException if styleName is null or empty.
      */
+    @Override
     public boolean removeStyle(String styleName, final boolean purge)
             throws IllegalArgumentException {
-        if (styleName == null || styleName.isEmpty())
+        if (styleName == null || styleName.isEmpty()) {
             throw new IllegalArgumentException(
                     "Check styleName parameter, it may never be null or empty");
+        }
 
         // check style name
         // TODO may we want to throw an exception instead of
         // change style name?
-        if(styleName.contains(":"))
-            LOGGER.warn("Style name is going to be changed ["+styleName+"]");
+        if (styleName.contains(":")) {
+            LOGGER.warn("Style name is going to be changed [" + styleName + "]");
+        }
         styleName = styleName.replaceAll(":", "_");
         styleName = URLEncoder.encode(styleName);
 
@@ -323,7 +346,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
             sUrl += "?purge=true";
         }
 
-        return HTTPUtils.delete(sUrl, gsuser, gspass);
+        return CASHTTPUtils.delete(sUrl, gsuser, gspass);
     }
 
     /**
@@ -335,6 +358,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
+    @Override
     public boolean removeStyle(String styleName) {
         try {
             return removeStyle(styleName, true);
@@ -349,7 +373,6 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
     //=========================================================================
     // Publishing in workspace
     //=========================================================================
-
     /**
      * Store and publish a Style.
      *
@@ -358,6 +381,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean publishStyleInWorkspace(final String workspace, String sldBody) {
         try {
             return publishStyleInWorkspace(workspace, sldBody);
@@ -379,6 +403,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @throws IllegalArgumentException if the style body is null or empty.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean publishStyleInWorkspace(final String workspace, final String sldBody, final String name)
             throws IllegalArgumentException {
 
@@ -386,7 +411,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
             throw new IllegalArgumentException("The style body may not be null or empty");
         }
         String sUrl = buildPostUrl(workspace, name);
-        final String result = HTTPUtils.post(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
+        final String result = CASHTTPUtils.post(sUrl, sldBody, "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
 
@@ -398,6 +423,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean publishStyleInWorkspace(final String workspace, File sldFile) {
         return publishStyleInWorkspace(workspace, sldFile, null);
     }
@@ -411,10 +437,11 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean publishStyleInWorkspace(final String workspace, File sldFile, String name) {
         String sUrl = buildPostUrl(workspace, name);
         LOGGER.debug("POSTing new style " + name + " to " + sUrl);
-        String result = HTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
+        String result = CASHTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
         return result != null;
     }
 
@@ -425,9 +452,11 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @param name the Style name to update.
      *
      * @return <TT>true</TT> if the operation completed successfully.
-     * @throws IllegalArgumentException if the style body or name are null or empty.
+     * @throws IllegalArgumentException if the style body or name are null or
+     * empty.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean updateStyleInWorkspace(final String workspace, final String sldBody, final String name)
             throws IllegalArgumentException {
         if (sldBody == null || sldBody.isEmpty()) {
@@ -438,7 +467,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
 
         final String sUrl = buildUrl(workspace, name, null);
 
-        final String result = HTTPUtils.put(sUrl, sldBody,
+        final String result = CASHTTPUtils.put(sUrl, sldBody,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
@@ -450,9 +479,11 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @param name the Style name.
      *
      * @return <TT>true</TT> if the operation completed successfully.
-     * @throws IllegalArgumentException if the sldFile file or name are null or name is empty.
+     * @throws IllegalArgumentException if the sldFile file or name are null or
+     * name is empty.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean updateStyleInWorkspace(final String workspace, final File sldFile, final String name)
             throws IllegalArgumentException {
 
@@ -464,7 +495,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
 
         final String sUrl = buildUrl(workspace, name, null);
 
-        final String result = HTTPUtils.put(sUrl, sldFile,
+        final String result = CASHTTPUtils.put(sUrl, sldFile,
                 "application/vnd.ogc.sld+xml", gsuser, gspass);
         return result != null;
     }
@@ -472,7 +503,8 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
     /**
      * Remove a Style.
      * <P>
-     * The Style will be unpublished, and (optionally) the SLD file will be removed.
+     * The Style will be unpublished, and (optionally) the SLD file will be
+     * removed.
      *
      * @param styleName the name of the Style to remove.
      * @param purge remove the related SLD file from disk.
@@ -481,16 +513,19 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @throws IllegalArgumentException if styleName is null or empty.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean removeStyleInWorkspace(final String workspace, String styleName, final boolean purge)
             throws IllegalArgumentException {
-        if (styleName == null || styleName.isEmpty())
+        if (styleName == null || styleName.isEmpty()) {
             throw new IllegalArgumentException(
                     "Check styleName parameter, it may never be null or empty");
+        }
 
         // check style name
         // TODO may we want to throw an exception instead of change style name?
-        if(styleName.contains(":"))
-            LOGGER.warn("Style name is going to be changed ["+styleName+"]");
+        if (styleName.contains(":")) {
+            LOGGER.warn("Style name is going to be changed [" + styleName + "]");
+        }
         styleName = styleName.replaceAll(":", "_");
         styleName = URLEncoder.encode(styleName);
 
@@ -500,7 +535,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
             sUrl += "?purge=true";
         }
 
-        return HTTPUtils.delete(sUrl, gsuser, gspass);
+        return CASHTTPUtils.delete(sUrl, gsuser, gspass);
     }
 
     /**
@@ -513,6 +548,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @since GeoServer 2.2
      */
+    @Override
     public boolean removeStyleInWorkspace(final String workspace, String styleName) {
         try {
             return removeStyleInWorkspace(workspace, styleName, true);
@@ -524,52 +560,12 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
         return false;
     }
 
-    //=========================================================================
-    // Util methods
-    //=========================================================================
-
-    /**
-     * Creates a URL for the given stylename with the name in querystring
-     * @param workspace nullable workspace name
-     * @param name style name
-     * @return
-     */
-    protected String buildPostUrl(final String workspace, String name) {
-        StringBuilder sUrl = new StringBuilder(gsBaseUrl.toString()).append("/rest");
-
-        if(workspace != null)
-            sUrl.append("/workspaces/").append(workspace);
-
-        sUrl.append("/styles");
-        if ( name != null && !name.isEmpty()) {
-            sUrl.append("?name=").append(URLEncoder.encode(name));
-        }
-        return sUrl.toString();
+    public Assertion getCasAssertion() {
+        return casAssertion;
     }
 
-
-    protected String buildXmlUrl(final String workspace, final String name) {
-        return buildUrl(workspace, name, ".xml");
+    public void setCasAssertion(Assertion casAssertion) {
+        this.casAssertion = casAssertion;
+        CASHTTPUtils.setCasAssertion(casAssertion);
     }
-
-    /**
-     * Creates a URL for the given stylename with the name in the REST path
-     * @param workspace nullable workspace name
-     * @param name style name
-     * @param ext nullable output extension (e.g. ".xml" ".sld")
-     */
-    protected String buildUrl(final String workspace, final String name, final String ext) {
-        StringBuilder sUrl = new StringBuilder(gsBaseUrl.toString()).append("/rest");
-
-        if(workspace != null)
-            sUrl.append("/workspaces/").append(workspace);
-
-        sUrl.append("/styles/").append(URLEncoder.encode(name));
-                
-        if(ext != null)
-            sUrl.append(ext);
-
-        return sUrl.toString();
-    }
-
 }

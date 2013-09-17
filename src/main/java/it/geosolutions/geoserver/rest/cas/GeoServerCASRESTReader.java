@@ -6,6 +6,7 @@ package it.geosolutions.geoserver.rest.cas;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.HTTPUtils;
+import it.geosolutions.geoserver.rest.cas.manager.GeoServerCASRESTStyleManager;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,6 +44,17 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
     }
 
     @Override
+    protected String init(URL gsUrl, String username, String password) {
+        System.out.println("Executing init from children");
+        baseurl = super.init(gsUrl, username, password);
+        System.out.println("Base url calculated: " + baseurl);
+
+        super.styleManager = new GeoServerCASRESTStyleManager(gsUrl, username, password);
+
+        return baseurl;
+    }
+
+    @Override
     protected String load(String url) {
         url = this.appendProxyTicketToURL(super.baseurl + url);
         LOGGER.info("Loading from REST path " + url);
@@ -74,16 +86,7 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
      */
     @Override
     public boolean existGeoserver() {
-        return HTTPUtils.httpPing(this.appendProxyTicketToURL(baseurl + "/rest/"));
-    }
-
-    /**
-     * @see GeoServerRESTReader.existsStyle(java.lang.String styleName)
-     */
-    @Override
-    public boolean existsStyle(String styleName) throws RuntimeException {
-        String url = this.appendProxyTicketToURL(baseurl + "/rest/styles/" + styleName + ".xml");
-        return HTTPUtils.exists(url, username, password);
+        return CASHTTPUtils.httpPing(baseurl + "/rest/");
     }
 
     public Assertion getCasAssertion() {
@@ -92,6 +95,8 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
 
     public void setCasAssertion(Assertion casAssertion) {
         this.casAssertion = casAssertion;
+        CASHTTPUtils.setCasAssertion(casAssertion);
+        ((GeoServerCASRESTStyleManager) super.styleManager).setCasAssertion(casAssertion);
     }
 
     private String appendProxyTicketToURL(String url) {

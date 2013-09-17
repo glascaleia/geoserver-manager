@@ -78,23 +78,27 @@ public class GeoServerRESTPublisher {
      * GeoServer instance base URL. E.g.:
      * <TT>http://localhost:8080/geoserver</TT>.
      */
+    //naz
     private String restURL;
     /**
      * GeoServer instance privileged username, with read & write permission on
      * REST API
      */
+    //naz
     private String gsuser;
     /**
      * GeoServer instance password for privileged username with r&w permission
      * on REST API
      */
+    //naz
     private String gspass;
+    //naz
+    private GeoServerRESTStyleManager styleManager;
 
+    //naz
     public GeoServerRESTPublisher() {
     }
 
-
-    private final GeoServerRESTStyleManager styleManager;
     /**
      * Creates a <TT>GeoServerRESTPublisher</TT> to connect against a GeoServer
      * instance with the given URL and user credentials.
@@ -113,7 +117,7 @@ public class GeoServerRESTPublisher {
         try {
             url = new URL(restURL);
         } catch (MalformedURLException ex) {
-            LOGGER.error("Bad URL: Calls to GeoServer are going to fail" , ex);
+            LOGGER.error("Bad URL: Calls to GeoServer are going to fail", ex);
         }
         styleManager = new GeoServerRESTStyleManager(url, username, password);
     }
@@ -452,7 +456,8 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String, java.io.File)
+     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String,
+     * java.io.File)
      */
     public boolean publishStyleInWorkspace(String workspace, File sldFile) {
         return styleManager.publishStyleInWorkspace(workspace, sldFile);
@@ -460,7 +465,8 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String, java.io.File, java.lang.String)
+     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String,
+     * java.io.File, java.lang.String)
      */
     public boolean publishStyleInWorkspace(String workspace, File sldFile, String name) {
         return styleManager.publishStyleInWorkspace(workspace, sldFile, name);
@@ -468,7 +474,8 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String, java.lang.String, java.lang.String)
+     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String,
+     * java.lang.String, java.lang.String)
      */
     public boolean updateStyleInWorkspace(String workspace, String sldBody, String name) throws IllegalArgumentException {
         return styleManager.updateStyleInWorkspace(workspace, sldBody, name);
@@ -476,7 +483,8 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String, java.io.File, java.lang.String)
+     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String,
+     * java.io.File, java.lang.String)
      */
     public boolean updateStyleInWorkspace(String workspace, File sldFile, String name) throws IllegalArgumentException {
         return styleManager.updateStyleInWorkspace(workspace, sldFile, name);
@@ -484,7 +492,8 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String, java.lang.String, boolean)
+     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String,
+     * java.lang.String, boolean)
      */
     public boolean removeStyleInWorkspace(String workspace, String styleName, boolean purge) throws IllegalArgumentException {
         return styleManager.removeStyleInWorkspace(workspace, styleName, purge);
@@ -492,12 +501,12 @@ public class GeoServerRESTPublisher {
 
     /**
      * @since GeoServer 2.2
-     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String, java.lang.String)
+     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String,
+     * java.lang.String)
      */
     public boolean removeStyleInWorkspace(String workspace, String styleName) {
         return styleManager.removeStyleInWorkspace(workspace, styleName);
     }
-
 
     // ==========================================================================
     // === DATASTORE PUBLISHING
@@ -1041,8 +1050,9 @@ public class GeoServerRESTPublisher {
             LOGGER.info("DB layer successfully added (layer:" + layername + ")");
 
             if (layerEncoder == null) {
-                if (LOGGER.isErrorEnabled())
+                if (LOGGER.isErrorEnabled()) {
                     LOGGER.error("GSLayerEncoder is null: Unable to find the defaultStyle for this layer");
+                }
                 return false;
             }
 
@@ -2191,12 +2201,13 @@ public class GeoServerRESTPublisher {
 
     /**
      * Remove a given Datastore in a given Workspace.
-     * 
+     *
      * @param workspace The name of the workspace
      * @param storename The name of the Datastore to remove.
      * @param the {@link StoreType} type
      * @param recurse if remove should be performed recursively
-     * @throws IllegalArgumentException if workspace or storename are null or empty
+     * @throws IllegalArgumentException if workspace or storename are null or
+     * empty
      * @return <TT>true</TT> if the store was successfully removed.
      */
     private boolean removeStore(String workspace, String storename, StoreType type,
@@ -2271,6 +2282,7 @@ public class GeoServerRESTPublisher {
                     workspace);
             if (recurse) {
                 url.append("?recurse=true");
+            }
 
             deleteStylesForWorkspace(workspace); // !!! workaround
 
@@ -2292,7 +2304,7 @@ public class GeoServerRESTPublisher {
     }
 
     /**
-     *  workaround: geoserver does not delete styles inside workspaces
+     * workaround: geoserver does not delete styles inside workspaces
      * https://jira.codehaus.org/browse/GEOS-5986
      */
     private void deleteStylesForWorkspace(String workspace) {
@@ -2477,7 +2489,7 @@ public class GeoServerRESTPublisher {
     // ==========================================================================
     /**
      * Allows to configure some layer attributes such as DefaultStyle
-     * 
+     *
      * @param workspace
      * @param resourceName the name of the resource to use (featureStore or
      * coverageStore name)
@@ -2604,8 +2616,9 @@ public class GeoServerRESTPublisher {
 
     /**
      * Configure an existing coverage in a given workspace and coverage store
-     * 
-     * @param ce contains the coverage name to configure and the configuration to apply
+     *
+     * @param ce contains the coverage name to configure and the configuration
+     * to apply
      * @param wsname the workspace to search for existent coverage
      * @param csname the coverage store to search for existent coverage
      * @return true if success
@@ -2613,21 +2626,23 @@ public class GeoServerRESTPublisher {
     public boolean configureCoverage(final GSCoverageEncoder ce, final String wsname,
             final String csname) {
         return configureCoverage(ce, wsname, csname, ce.getName());
-    }    
+    }
 
     /**
      * Configure an existing coverage in a given workspace and coverage store
-     * 
-     * @param ce contains the coverage name to configure and the configuration to apply
+     *
+     * @param ce contains the coverage name to configure and the configuration
+     * to apply
      * @param wsname the workspace to search for existent coverage
      * @param csname the coverage store to search for existent coverage
-     * @param coverageName the name of the coverage, useful for changing name for the coverage itself
+     * @param coverageName the name of the coverage, useful for changing name
+     * for the coverage itself
      * @return true if success
      */
     public boolean configureCoverage(final GSCoverageEncoder ce, final String wsname,
             final String csname, final String coverageName) {
         if (coverageName == null) {
-            if (LOGGER.isErrorEnabled())
+            if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("Unable to configure a coverage with no name try using GSCoverageEncoder.setName(String)");
             }
             return false;
@@ -2642,7 +2657,7 @@ public class GeoServerRESTPublisher {
             }
             return false;
         }
-        
+
         // optimized search, left the old code for reference 
         RESTCoverage coverage = reader.getCoverage(wsname, csname, coverageName);
 //        final RESTCoverageList covList = reader.getCoverages(wsname, csname);
@@ -2660,10 +2675,11 @@ public class GeoServerRESTPublisher {
 //            }
 //        }
         // if no coverage to configure is found return false
-        if (coverage==null) {
-            if (LOGGER.isErrorEnabled())
+        if (coverage == null) {
+            if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("No coverages found in new coveragestore " + csname + " called "
                         + coverageName);
+            }
             return false;
         }
 
@@ -2679,7 +2695,7 @@ public class GeoServerRESTPublisher {
                         + coverageName);
             }
         } else {
-            if (LOGGER.isWarnEnabled())
+            if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Error configuring coverage " + wsname + ":" + csname + ":" + coverageName
                         + " (" + sendResult + ")");
             }
@@ -2842,8 +2858,6 @@ public class GeoServerRESTPublisher {
     }
 
     // ==> StructuredCoverageGridReader
-
-    // ==> StructuredCoverageGridReader
     /**
      * Create a store or harvest the coverage from the provided <b>external</b>
      * path.
@@ -2875,34 +2889,40 @@ public class GeoServerRESTPublisher {
     }
 
     /**
-     * Create a new ImageMosaic with the provided configuration provided as a zip file.
-     * 
+     * Create a new ImageMosaic with the provided configuration provided as a
+     * zip file.
+     *
      * <p>
      * This call configures all the coverages contained in the ImageMosaic.
-     * 
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
      * @param the absolute path to the file to upload
-     * 
-     * @return <code>true</code> if the call succeeds or <code>false</code> otherwise.
+     *
+     * @return <code>true</code> if the call succeeds or <code>false</code>
+     * otherwise.
      * @since geoserver-2.4.0, geoserver-mng-1.6.0
      */
     public boolean createImageMosaic(String workspace, String coverageStore, String path) {
         return createImageMosaic(workspace, coverageStore, path, ConfigureCoveragesOption.ALL);
     }
-    
+
     /**
-     * Create a new ImageMosaic with the provided configuration provided as a zip file.
-     * 
+     * Create a new ImageMosaic with the provided configuration provided as a
+     * zip file.
+     *
      * <p>
-     * With the options configure we can decide whether or not to configure or not the coverages contained in the ImageMosaic.
-     * 
+     * With the options configure we can decide whether or not to configure or
+     * not the coverages contained in the ImageMosaic.
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
      * @param the absolute path to the file to upload
-     * @param configureOpt tells GeoServer whether to configure all coverages in this mosaic (ALL) or none of them (NONE).
-     * 
-     * @return <code>true</code> if the call succeeds or <code>false</code> otherwise.
+     * @param configureOpt tells GeoServer whether to configure all coverages in
+     * this mosaic (ALL) or none of them (NONE).
+     *
+     * @return <code>true</code> if the call succeeds or <code>false</code>
+     * otherwise.
      * @since geoserver-2.4.0, geoserver-mng-1.6.0
      */
     public boolean createImageMosaic(String workspace, String coverageStore, String path, ConfigureCoveragesOption configureOpt) {
@@ -2910,40 +2930,40 @@ public class GeoServerRESTPublisher {
         checkString(workspace);
         checkString(coverageStore);
         checkString(path);
-        final File zipFile= new File(path);
-        if(!zipFile.exists()||!zipFile.isFile()||!zipFile.canRead()){
-            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: "+path);
+        final File zipFile = new File(path);
+        if (!zipFile.exists() || !zipFile.isFile() || !zipFile.canRead()) {
+            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: " + path);
         }
         // is it a zip?
-        ZipFile zip=null;
-        try{
-            zip= new ZipFile(zipFile);
+        ZipFile zip = null;
+        try {
+            zip = new ZipFile(zipFile);
             zip.getName();
-        }catch (Exception e) {
-            LOGGER.trace(e.getLocalizedMessage(),e.getStackTrace());
-            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: "+path);
-        }finally{
-            if(zip!=null){
+        } catch (Exception e) {
+            LOGGER.trace(e.getLocalizedMessage(), e.getStackTrace());
+            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: " + path);
+        } finally {
+            if (zip != null) {
                 try {
                     zip.close();
                 } catch (IOException e) {
                     // swallow
-                    LOGGER.trace(e.getLocalizedMessage(),e.getStackTrace());
+                    LOGGER.trace(e.getLocalizedMessage(), e.getStackTrace());
                 }
             }
         }
 
         // create URL
-        StringBuilder ss=HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/coveragestores/",
+        StringBuilder ss = HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/coveragestores/",
                 coverageStore, "/", UploadMethod.EXTERNAL.toString(), ".imagemosaic");
-        switch(configureOpt){
-        case ALL:
-            break;
-        case NONE:
-            ss.append("?configure=none");
-            break;
-        default: 
-            throw new IllegalArgumentException("Unrecognized COnfigureOption: "+configureOpt);
+        switch (configureOpt) {
+            case ALL:
+                break;
+            case NONE:
+                ss.append("?configure=none");
+                break;
+            default:
+                throw new IllegalArgumentException("Unrecognized COnfigureOption: " + configureOpt);
         }
         String sUrl = ss.toString();
 
@@ -2954,14 +2974,16 @@ public class GeoServerRESTPublisher {
 
     /**
      * Remove a granule from a structured coverage by id.
-     * 
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
-     * @param coverage the name of the target coverage from which we are going to remove
+     * @param coverage the name of the target coverage from which we are going
+     * to remove
      * @param filter the absolute path to the file to upload
-     * 
-     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
-     * 
+     *
+     * @return <code>null</code> in case the call does not succeed, or an
+     * instance of {@link RESTStructuredCoverageGranulesList}.
+     *
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
@@ -2985,14 +3007,16 @@ public class GeoServerRESTPublisher {
 
     /**
      * Remove granules from a structured coverage, by providing a CQL filter.
-     * 
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
-     * @param coverage the name of the target coverage from which we are going to remove
+     * @param coverage the name of the target coverage from which we are going
+     * to remove
      * @param filter the absolute path to the file to upload
-     * 
-     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
-     * 
+     *
+     * @return <code>null</code> in case the call does not succeed, or an
+     * instance of {@link RESTStructuredCoverageGranulesList}.
+     *
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
@@ -3017,10 +3041,10 @@ public class GeoServerRESTPublisher {
 
     /**
      * Check the provided string for not being null or empty.
-     * 
+     *
      * <p>
      * It throws an exception in case the string is either null or empty.
-     * 
+     *
      * @param string the {@link String} to be checked
      */
     private static void checkString(String string) {
@@ -3030,71 +3054,6 @@ public class GeoServerRESTPublisher {
         if (string.length() <= 0) {
             throw new IllegalArgumentException("Provided string is is empty!");
         }
-    
-    }
-
-    /**
-     * Remove a granule from a structured coverage by id.
-     *
-     * @param workspace the GeoServer workspace
-     * @param coverageStore the GeoServer coverageStore
-     * @param coverage the name of the target coverage from which we are going
-     * to remove
-     * @param filter the absolute path to the file to upload
-     *
-     * @return <code>null</code> in case the call does not succeed, or an
-     * instance of {@link RESTStructuredCoverageGranulesList}.
-     *
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
-     */
-    public boolean removeGranuleById(final String workspace, String coverageStore, String coverage, String granuleId) {
-        try {
-            GeoServerRESTStructuredGridCoverageReaderManager manager =
-                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(restURL), gsuser, gspass);
-            return manager.removeGranuleById(workspace, coverageStore, coverage, granuleId);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(e.getLocalizedMessage(), e);
-            }
-        } catch (MalformedURLException e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(e.getLocalizedMessage(), e);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Remove granules from a structured coverage, by providing a CQL filter.
-     *
-     * @param workspace the GeoServer workspace
-     * @param coverageStore the GeoServer coverageStore
-     * @param coverage the name of the target coverage from which we are going
-     * to remove
-     * @param filter the absolute path to the file to upload
-     *
-     * @return <code>null</code> in case the call does not succeed, or an
-     * instance of {@link RESTStructuredCoverageGranulesList}.
-     *
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
-     */
-    public boolean removeGranulesByCQL(final String workspace, String coverageStore, String coverage, String filter) throws UnsupportedEncodingException {
-        try {
-            GeoServerRESTStructuredGridCoverageReaderManager manager =
-                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(restURL), gsuser, gspass);
-            return manager.removeGranulesByCQL(workspace, coverageStore, coverage, filter);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(e.getLocalizedMessage(), e);
-            }
-        } catch (MalformedURLException e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(e.getLocalizedMessage(), e);
-            }
-        }
-        return false;
 
     }
 }

@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package it.geosolutions.geoserver.rest;
 
 import it.geosolutions.geoserver.rest.decoder.RESTCoverage;
@@ -57,33 +56,39 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
-
 /**
  * Connect to a GeoServer instance to read its data.
- * <BR>Info are returned as <TT>Strings</TT> or, for complex data, as XML elements
- * wrapped in proper parsers (e.g.: {@link RESTLayer}, {@link RESTCoverageStore}, ...).
+ * <BR>Info are returned as <TT>Strings</TT> or, for complex data, as XML
+ * elements wrapped in proper parsers (e.g.:
+ * {@link RESTLayer}, {@link RESTCoverageStore}, ...).
  *
  * @author ETj (etj at geo-solutions.it)
  */
 public class GeoServerRESTReader {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GeoServerRESTReader.class);
+    //naz
+    protected String baseurl;
+    //naz
+    protected String username;
+    //naz
+    protected String password;
+    //naz
+    protected GeoServerRESTStyleManager styleManager;
 
-    private final String baseurl;
-    private String username;
-    private String password;
-
-    private GeoServerRESTStyleManager styleManager;
+    //naz
+    public GeoServerRESTReader() {
+    }
 
     /**
      * Creates a <TT>GeoServerRESTReader</TT> for a given GeoServer instance and
      * no auth credentials.
-     * <P><B><I>Note that GeoServer 2.0 REST interface requires username/password credentials by
-     * default, if not otherwise configured. </I></B>.
+     * <P><B><I>Note that GeoServer 2.0 REST interface requires
+     * username/password credentials by default, if not otherwise configured.
+     * </I></B>.
      *
-     * @param gsUrl the base GeoServer URL(e.g.: <TT>http://localhost:8080/geoserver</TT>)
+     * @param gsUrl the base GeoServer URL(e.g.:
+     * <TT>http://localhost:8080/geoserver</TT>)
      */
     public GeoServerRESTReader(URL gsUrl) {
         baseurl = init(gsUrl, null, null);
@@ -92,10 +97,12 @@ public class GeoServerRESTReader {
     /**
      * Creates a <TT>GeoServerRESTReader</TT> for a given GeoServer instance and
      * no auth credentials.
-     * <P><B><I>Note that GeoServer 2.0 REST interface requires username/password credentials by
-     * default, if not otherwise configured. </I></B>.
+     * <P><B><I>Note that GeoServer 2.0 REST interface requires
+     * username/password credentials by default, if not otherwise configured.
+     * </I></B>.
      *
-     * @param gsUrl the base GeoServer URL (e.g.: <TT>http://localhost:8080/geoserver</TT>)
+     * @param gsUrl the base GeoServer URL (e.g.:
+     * <TT>http://localhost:8080/geoserver</TT>)
      */
     public GeoServerRESTReader(String gsUrl) throws MalformedURLException {
         baseurl = init(gsUrl, null, null);
@@ -105,7 +112,8 @@ public class GeoServerRESTReader {
      * Creates a <TT>GeoServerRESTReader</TT> for a given GeoServer instance
      * with the given auth credentials.
      *
-     * @param gsUrl the base GeoServer URL (e.g.: <TT>http://localhost:8080/geoserver</TT>)
+     * @param gsUrl the base GeoServer URL (e.g.:
+     * <TT>http://localhost:8080/geoserver</TT>)
      * @param username username auth credential
      * @param password password auth credential
      */
@@ -117,7 +125,8 @@ public class GeoServerRESTReader {
      * Creates a <TT>GeoServerRESTReader</TT> for a given GeoServer instance
      * with the given auth credentials.
      *
-     * @param gsUrl the base GeoServer URL (e.g.: <TT>http://localhost:8080/geoserver</TT>)
+     * @param gsUrl the base GeoServer URL (e.g.:
+     * <TT>http://localhost:8080/geoserver</TT>)
      * @param username username auth credential
      * @param password password auth credential
      */
@@ -129,11 +138,12 @@ public class GeoServerRESTReader {
         return init(new URL(gsUrl), username, password);
     }
 
-    private String init(URL gsUrl, String username, String password) {
+    //naz
+    protected String init(URL gsUrl, String username, String password) {
         String restUrl = gsUrl.toExternalForm();
-        String cleanUrl = restUrl.endsWith("/") ?
-                            restUrl.substring(0, restUrl.length()-1) :
-                            restUrl;
+        String cleanUrl = restUrl.endsWith("/")
+                ? restUrl.substring(0, restUrl.length() - 1)
+                : restUrl;
         this.username = username;
         this.password = password;
 
@@ -142,13 +152,15 @@ public class GeoServerRESTReader {
         return cleanUrl;
     }
 
-    private String load(String url) {
+    //naz
+    protected String load(String url) {
         LOGGER.info("Loading from REST path " + url);
         String response = HTTPUtils.get(baseurl + url, username, password);
         return response;
     }
 
-    private String loadFullURL(String url) {
+    //naz
+    protected String loadFullURL(String url) {
         LOGGER.info("Loading from REST path " + url);
         String response = HTTPUtils.get(url, username, password);
         return response;
@@ -157,11 +169,12 @@ public class GeoServerRESTReader {
     /**
      * Check if a GeoServer instance is running at the given URL.
      * <BR>
-     * Return <TT>true</TT> if the configured GeoServer is up and replies to REST requests.
+     * Return <TT>true</TT> if the configured GeoServer is up and replies to
+     * REST requests.
      * <BR>
      * Send a HTTP GET request to the configured URL.<BR>
-     * Return <TT>true</TT> if a HTTP 200 code (OK) is read from the HTTP response;
-     * any other response code, or connection error, will return a
+     * Return <TT>true</TT> if a HTTP 200 code (OK) is read from the HTTP
+     * response; any other response code, or connection error, will return a
      * <TT>false</TT> boolean.
      *
      * @return true if a GeoServer instance was found at the configured URL.
@@ -173,19 +186,21 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== STYLES
     //==========================================================================
-
     /**
      * Check if a Style exists in the configured GeoServer instance.
+     *
      * @param styleName the name of the style to check for.
      * @return <TT>true</TT> on HTTP 200, <TT>false</TT> on HTTP 404
-     * @throws RuntimeException if any other HTTP code than 200 or 404 was retrieved.
+     * @throws RuntimeException if any other HTTP code than 200 or 404 was
+     * retrieved.
      */
     public boolean existsStyle(String styleName) throws RuntimeException {
         return styleManager.existsStyle(styleName);
     }
 
     /**
-     * @see GeoServerRESTStyleManager#existsStyle(java.lang.String, java.lang.String) 
+     * @see GeoServerRESTStyleManager#existsStyle(java.lang.String,
+     * java.lang.String)
      * @since GeoServer 2.2
      */
     public boolean existsStyle(String workspace, String styleName) throws RuntimeException {
@@ -201,7 +216,8 @@ public class GeoServerRESTReader {
     }
 
     /**
-     * @see GeoServerRESTStyleManager#getStyle(java.lang.String, java.lang.String)
+     * @see GeoServerRESTStyleManager#getStyle(java.lang.String,
+     * java.lang.String)
      * @since GeoServer 2.2
      */
     public RESTStyle getStyle(String workspace, String name) {
@@ -233,7 +249,7 @@ public class GeoServerRESTReader {
     }
 
     /**
-     * @see GeoServerRESTStyleManager#getSLD(java.lang.String, java.lang.String) 
+     * @see GeoServerRESTStyleManager#getSLD(java.lang.String, java.lang.String)
      * @since GeoServer 2.2
      */
     public String getSLD(String workspace, String styleName) {
@@ -243,12 +259,11 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== DATASTORES
     //==========================================================================
-
     /**
      * Get summary info about all DataStores in a WorkSpace.
-     * 
+     *
      * @param workspace The name of the workspace
-     * 
+     *
      * @return summary info about Datastores as a {@link RESTDataStoreList}
      */
     public RESTDataStoreList getDatastores(String workspace) {
@@ -279,7 +294,7 @@ public class GeoServerRESTReader {
     /**
      * Get detailed info about a FeatureType's Datastore.
      *
-     * @param featureType the RESTFeatureType 
+     * @param featureType the RESTFeatureType
      * @return DataStore details as a {@link RESTDataStore}
      */
     public RESTDataStore getDatastore(RESTFeatureType featureType) {
@@ -295,17 +310,17 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== FEATURETYPES
     //==========================================================================
-
     /**
-     * Get detailed info about a FeatureType given the Layer where it's published with.
+     * Get detailed info about a FeatureType given the Layer where it's
+     * published with.
      *
      * @param layer A layer publishing the FeatureType
      * @return FeatureType details as a {@link RESTCoverage}
      */
-
     public RESTFeatureType getFeatureType(RESTLayer layer) {
-        if(layer.getType() != RESTLayer.Type.VECTOR)
+        if (layer.getType() != RESTLayer.Type.VECTOR) {
             throw new RuntimeException("Bad layer type for layer " + layer.getName());
+        }
 
         String response = loadFullURL(layer.getResourceUrl());
         return RESTFeatureType.build(response);
@@ -314,7 +329,6 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== COVERAGESTORES
     //==========================================================================
-
     /**
      * Get summary info about all CoverageStores in a WorkSpace.
      *
@@ -344,7 +358,7 @@ public class GeoServerRESTReader {
         }
         return RESTCoverageStore.build(load(url));
     }
-    
+
     /**
      * Get detailed info about a Coverage's Datastore.
      *
@@ -364,7 +378,6 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== COVERAGES
     //==========================================================================
-
     /**
      * Get list of coverages (usually only one).
      *
@@ -373,14 +386,14 @@ public class GeoServerRESTReader {
      * @return Coverages list as a {@link RESTCoverageList}
      */
     public RESTCoverageList getCoverages(String workspace, String csName) {
-            // restURL + "/rest/workspaces/" + workspace + "/coveragestores/" + coverageStore + "/coverages.xml";
+        // restURL + "/rest/workspaces/" + workspace + "/coveragestores/" + coverageStore + "/coverages.xml";
         String url = "/rest/workspaces/" + workspace + "/coveragestores/" + csName + "/coverages.xml";
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Covs from " + url);
         }
         return RESTCoverageList.build(load(url));
     }
-    
+
     /**
      * Get detailed info about a given Coverage.
      *
@@ -390,7 +403,7 @@ public class GeoServerRESTReader {
      * @return Coverage details as a {@link RESTCoverage}
      */
     public RESTCoverage getCoverage(String workspace, String store, String name) {
-        String url = "/rest/workspaces/" + workspace + "/coveragestores/" + store + "/coverages/"+name+".xml";
+        String url = "/rest/workspaces/" + workspace + "/coveragestores/" + store + "/coverages/" + name + ".xml";
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving Coverage from " + url);
         }
@@ -398,14 +411,16 @@ public class GeoServerRESTReader {
     }
 
     /**
-     * Get detailed info about a Coverage given the Layer where it's published with.
+     * Get detailed info about a Coverage given the Layer where it's published
+     * with.
      *
      * @param layer A layer publishing the CoverageStore
      * @return Coverage details as a {@link RESTCoverage}
      */
     public RESTCoverage getCoverage(RESTLayer layer) {
-        if(layer.getType() != RESTLayer.Type.RASTER)
+        if (layer.getType() != RESTLayer.Type.RASTER) {
             throw new RuntimeException("Bad layer type for layer " + layer.getName());
+        }
 
         String response = loadFullURL(layer.getResourceUrl());
         return RESTCoverage.build(response);
@@ -413,10 +428,10 @@ public class GeoServerRESTReader {
 
     //==========================================================================
     //==========================================================================
-    
     /**
-     * Get detailed info about a Resource given the Layer where it's published with.
-     * The Resource can then be converted to RESTCoverage or RESTFeatureType
+     * Get detailed info about a Resource given the Layer where it's published
+     * with. The Resource can then be converted to RESTCoverage or
+     * RESTFeatureType
      *
      * @return Resource details as a {@link RESTResource}
      */
@@ -428,7 +443,6 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== LAYERGROUPS
     //==========================================================================
-
     /**
      * Get summary info about all LayerGroups in the given workspace.
      *
@@ -442,7 +456,7 @@ public class GeoServerRESTReader {
         } else {
             url = "/rest/workspaces/" + workspace + "/layergroups.xml";
         }
-        
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving layergroups from " + url);
         }
@@ -462,14 +476,14 @@ public class GeoServerRESTReader {
             url = "/rest/layergroups/" + name + ".xml";
         } else {
             url = "/rest/workspaces/" + workspace + "/layergroups/" + name + ".xml";
-        }        
-        
+        }
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving layergroup from " + url);
         }
         return RESTLayerGroup.build(load(url));
     }
-    
+
     /**
      * Get summary info about all LayerGroups.
      *
@@ -489,12 +503,9 @@ public class GeoServerRESTReader {
         return getLayerGroup(null, name);
     }
 
-    
-    
     //==========================================================================
     //=== LAYERS
     //==========================================================================
-
     /**
      * Get summary info about all Layers.
      *
@@ -510,7 +521,7 @@ public class GeoServerRESTReader {
 
     /**
      * Get detailed info about a given Layer.
-     * 
+     *
      * @deprecated use {@link #getLayer(String, String)}
      *
      * @param name The name of the Layer
@@ -526,17 +537,19 @@ public class GeoServerRESTReader {
 
     /**
      * Get detailed info about a given Layer.
-     * 
+     *
      * @param workspace the workspace name
      * @param name the layer name
      * @return a RESTLayer with layer information or null
      */
     public RESTLayer getLayer(String workspace, String name) {
-        if (workspace == null || workspace.isEmpty())
+        if (workspace == null || workspace.isEmpty()) {
             throw new IllegalArgumentException("Workspace may not be null");
-        if (name == null || name.isEmpty())
+        }
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Layername may not be null");
-        String url = HTTPUtils.append("/rest/layers/",workspace,":",name,".xml").toString();
+        }
+        String url = HTTPUtils.append("/rest/layers/", workspace, ":", name, ".xml").toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving layer from " + url);
         }
@@ -546,26 +559,25 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== NAMESPACES
     //==========================================================================
-
     /**
      * Get a namespace.
-     * 
+     *
      * @param prefix namespace prefix.
-     * 
+     *
      * @return a RESTNamespace, or null if couldn't be created.
      */
     public RESTNamespace getNamespace(String prefix) {
-		if (prefix == null || prefix.isEmpty()) {
-			throw new IllegalArgumentException(
-				"Namespace prefix cannot be null or empty");			
-		}
-    	String url = "/rest/namespaces/"+prefix+".xml";
+        if (prefix == null || prefix.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Namespace prefix cannot be null or empty");
+        }
+        String url = "/rest/namespaces/" + prefix + ".xml";
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Getting namespace from " + url);
         }
         return RESTNamespace.build(load(url));
     }
-    
+
     /**
      * Get summary info about all Namespaces.
      *
@@ -582,7 +594,9 @@ public class GeoServerRESTReader {
     /**
      * Get the names of all the Namespaces.
      * <BR>
-     * This is a shortcut call: These info could be retrieved using {@link #getNamespaces getNamespaces}
+     * This is a shortcut call: These info could be retrieved using
+     * {@link #getNamespaces getNamespaces}
+     *
      * @return the list of the names of all Namespaces.
      */
     public List<String> getNamespaceNames() {
@@ -597,7 +611,6 @@ public class GeoServerRESTReader {
     //==========================================================================
     //=== WORKSPACES
     //==========================================================================
-
     /**
      * Get summary info about all Workspaces.
      *
@@ -608,20 +621,22 @@ public class GeoServerRESTReader {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Retrieving workspaces from " + url);
         }
-        
+
         return RESTWorkspaceList.build(load(url));
     }
 
     /**
      * Get the names of all the Workspaces.
      * <BR>
-     * This is a shortcut call: These info could be retrieved using {@link #getWorkspaces getWorkspaces}
+     * This is a shortcut call: These info could be retrieved using
+     * {@link #getWorkspaces getWorkspaces}
+     *
      * @return the list of the names of all Workspaces or an empty list.
      */
     public List<String> getWorkspaceNames() {
         RESTWorkspaceList list = getWorkspaces();
-        if(list==null){
-        	return Collections.emptyList();
+        if (list == null) {
+            return Collections.emptyList();
         }
         List<String> names = new ArrayList<String>(list.size());
         for (RESTWorkspaceList.RESTShortWorkspace item : list) {
@@ -632,15 +647,16 @@ public class GeoServerRESTReader {
 
     /**
      * Get information about a granule for a structured coverage.
-     * 
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
      * @param format the format of the file to upload
      * @param the absolute path to the file to upload
      * @param id the ID of the granule to get information for
-     * 
-     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
-     * 
+     *
+     * @return <code>null</code> in case the call does not succeed, or an
+     * instance of {@link RESTStructuredCoverageGranulesList}.
+     *
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
@@ -648,16 +664,16 @@ public class GeoServerRESTReader {
             String coverageStore, String coverage, String id) throws MalformedURLException,
             UnsupportedEncodingException {
         try {
-            GeoServerRESTStructuredGridCoverageReaderManager manager = 
-                new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
+            GeoServerRESTStructuredGridCoverageReaderManager manager =
+                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
             return manager.getGranuleById(workspace, coverageStore, coverage, id);
         } catch (IllegalArgumentException e) {
-            if(LOGGER.isInfoEnabled()){
-                LOGGER.info(e.getLocalizedMessage(),e);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
             }
         } catch (MalformedURLException e) {
-            if(LOGGER.isInfoEnabled()){
-                LOGGER.info(e.getLocalizedMessage(),e);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
             }
         }
         return null;
@@ -665,65 +681,104 @@ public class GeoServerRESTReader {
 
     /**
      * Get information about the schema of the index for a structured coverage.
-     * 
+     *
      * @param workspace the GeoServer workspace
      * @param coverageStore the GeoServer coverageStore
      * @param format the format of the file to upload
-     * 
-     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
-     * 
+     *
+     * @return <code>null</code> in case the call does not succeed, or an
+     * instance of {@link RESTStructuredCoverageGranulesList}.
+     *
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
-     public RESTStructuredCoverageIndexSchema getGranuleIndexSchema(final String workspace, String coverageStore, String coverage) throws MalformedURLException {
-         try {
-             GeoServerRESTStructuredGridCoverageReaderManager manager = 
-                 new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
-             return manager.getGranuleIndexSchema(workspace, coverageStore, coverage);
-         } catch (IllegalArgumentException e) {
-             if(LOGGER.isInfoEnabled()){
-                 LOGGER.info(e.getLocalizedMessage(),e);
-             }
-         } catch (MalformedURLException e) {
-             if(LOGGER.isInfoEnabled()){
-                 LOGGER.info(e.getLocalizedMessage(),e);
-             }
-         }
-         return null;
-     }
+    public RESTStructuredCoverageIndexSchema getGranuleIndexSchema(final String workspace, String coverageStore, String coverage) throws MalformedURLException {
+        try {
+            GeoServerRESTStructuredGridCoverageReaderManager manager =
+                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
+            return manager.getGranuleIndexSchema(workspace, coverageStore, coverage);
+        } catch (IllegalArgumentException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        } catch (MalformedURLException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        }
+        return null;
+    }
 
     /**
-      * Get information about the granules for a coverage with optional filter and paging.
-      * 
-      * @param workspace the GeoServer workspace
-      * @param coverageStore the GeoServer coverageStore
-      * @param coverage the name of the target coverage
-      * @param filter the format of the file to upload, can be <code>null</code> to include all the granules
-      * @param offset the start page, can be <code>null</code> or an integer
-      * @param limit the dimension of the page, can be <code>null</code> or a positive integer
-      * 
-      * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
-      * 
-      * @throws MalformedURLException
-      * @throws UnsupportedEncodingException
-      */
+     * Get information about the granules for a coverage with optional filter
+     * and paging.
+     *
+     * @param workspace the GeoServer workspace
+     * @param coverageStore the GeoServer coverageStore
+     * @param coverage the name of the target coverage
+     * @param filter the format of the file to upload, can be <code>null</code>
+     * to include all the granules
+     * @param offset the start page, can be <code>null</code> or an integer
+     * @param limit the dimension of the page, can be <code>null</code> or a
+     * positive integer
+     *
+     * @return <code>null</code> in case the call does not succeed, or an
+     * instance of {@link RESTStructuredCoverageGranulesList}.
+     *
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
     public RESTStructuredCoverageGranulesList getGranules(final String workspace, String coverageStore, String coverage, String filter, Integer offset, Integer limit)
-             throws MalformedURLException, UnsupportedEncodingException {
-         try {
-             GeoServerRESTStructuredGridCoverageReaderManager manager = 
-                 new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
-             return manager.getGranules(workspace, coverageStore, coverage, filter, offset, limit);
-         } catch (IllegalArgumentException e) {
-             if(LOGGER.isInfoEnabled()){
-                 LOGGER.info(e.getLocalizedMessage(),e);
-             }
-         } catch (MalformedURLException e) {
-             if(LOGGER.isInfoEnabled()){
-                 LOGGER.info(e.getLocalizedMessage(),e);
-             }
-         }
-         return null;
-     }
+            throws MalformedURLException, UnsupportedEncodingException {
+        try {
+            GeoServerRESTStructuredGridCoverageReaderManager manager =
+                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(baseurl), username, password);
+            return manager.getGranules(workspace, coverageStore, coverage, filter, offset, limit);
+        } catch (IllegalArgumentException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        } catch (MalformedURLException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        }
+        return null;
+    }
 
+    //naz
+    /**
+     * Get detailed info about a given Layer.
+     *
+     * @param name The name of the Layer
+     * @return Layer details as a {@link RESTLayer}
+     */
+    public String getDimensions(String name) throws MalformedURLException {
+        String url = "/rest/dimensions/" + name;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("### Retrieving dimension layer info from " + url);
+        }
+        String htmlResponse = load(url);
+        int indexStart = htmlResponse.indexOf("<body>");
+        int indexEnd = htmlResponse.indexOf("</body>");
+        return htmlResponse.substring(indexStart + 6, indexEnd).trim();
+    }
+
+    //naz
+    /**
+     * Get detailed info about a given Layer.
+     *
+     * @param name The name of the Layer
+     * @return Layer details as a {@link RESTLayer}
+     */
+    public String getDimensionsSize(String name) throws MalformedURLException {
+        String url = "/rest/dimensions/" + name;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("### Retrieving dimension layer info from " + url);
+        }
+
+        String[] dimSize = load(url).split(",");
+
+        return "" + dimSize.length;
+    }
 }
->>>>>>> 685c0d9d9894c9fa09bce7545c56455d46e74861

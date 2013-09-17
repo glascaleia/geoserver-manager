@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.AuthScope;
@@ -95,11 +94,7 @@ public class GSRESTEnhancedReader {
     public String loadGSServices() {
         String urlToCall = restURL + "/rest/services/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -109,11 +104,7 @@ public class GSRESTEnhancedReader {
     public String loadAllGSServiceAccessRules() {
         String urlToCall = restURL + "/rest/servicesecurity/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -123,11 +114,7 @@ public class GSRESTEnhancedReader {
     public String loadAllGSDataSecurityRules() {
         String urlToCall = restURL + "/rest/datasecurity/load/all";
         String jsonToParse = null;
-        try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.debug("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));
@@ -161,11 +148,7 @@ public class GSRESTEnhancedReader {
 //        }
         String urlToCall = this.restURL + "/rest/services/load/methods?serviceName=" + serviceName.trim();
         String jsonToParse = null;
-        try {
-            jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
-        } catch (MalformedURLException murle) {
-            logger.error("Malformed URLS Exception: " + murle);
-        }
+        jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
         logger.info("Json received: " + jsonToParse);
         jsonToParse = jsonToParse.substring(jsonToParse.indexOf('[') + 1,
                 jsonToParse.lastIndexOf(']'));

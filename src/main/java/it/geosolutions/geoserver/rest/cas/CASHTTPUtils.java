@@ -122,7 +122,7 @@ public class CASHTTPUtils {
      * (OK).
      * @throws MalformedURLException
      */
-    public static String get(String url, String username, String pw) throws MalformedURLException {
+    public static String get(String url, String username, String pw) {
         //
         url = appendProxyTicketToURL(url);
         //
