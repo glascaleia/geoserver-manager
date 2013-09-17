@@ -32,13 +32,19 @@ import java.math.BigDecimal;
 /**
  * 
  * @author Carlo Cancellieri - carlo.cancellieri@geo-solutions.it
+ * @author Simone Giannecchini, GeoSolutions
  *
  */
 public class GSDimensionInfoEncoder extends XmlElement{
 	public final static String DIMENSIONINFO="dimensionInfo";
 	
 	public final static String RESOLUTION="resolution";
+	
 	public final static String PRESENTATION="presentation";
+	
+	public final static String UNITS="units";
+	
+	public final static String UNIT_SYMBOL="unitSymbol";
 	
 	private boolean enabled;
 	
@@ -47,12 +53,7 @@ public class GSDimensionInfoEncoder extends XmlElement{
 	 */
 	public enum Presentation {
 		LIST,
-		CONTINUOUS_INTERVAL
-	}
-	/**
-	 * Enum for presentation mode which needs arguments
-	 */
-	public enum PresentationDiscrete {
+		CONTINUOUS_INTERVAL,
 		DISCRETE_INTERVAL
 	}
 	
@@ -81,39 +82,73 @@ public class GSDimensionInfoEncoder extends XmlElement{
 		this.enabled=Boolean.TRUE;
 	}
 	
-	/**
-	 * @param pres
-	 */
-	protected void addPresentation(final Presentation pres){
-		if (enabled){
-			add(PRESENTATION,pres.toString());
-		}
-	}
-	
 	public void setPresentation(final Presentation pres){
-		if (enabled){
-			set(PRESENTATION,pres.toString());
-			remove(RESOLUTION);
-		}
+		setPresentation(pres, null);
 	}
 	
 	/**
 	 * @param pres
 	 * @param interval
 	 */
-	protected void addPresentation(final PresentationDiscrete pres, final BigDecimal interval){
+	protected void addPresentation(final Presentation pres, final BigDecimal interval){
 		if (enabled){
 			add(PRESENTATION,pres.toString());
-			add(RESOLUTION,String.valueOf(interval));	
+			if(pres==Presentation.DISCRETE_INTERVAL){
+	                    if(pres==Presentation.DISCRETE_INTERVAL&&interval==null){
+	                        throw new IllegalArgumentException("Null interval was provided while trying to set the presentation to discrete interval.");
+	                    }
+	                    add(RESOLUTION,String.valueOf(interval)); 
+	                } else {
+	                    remove(RESOLUTION);
+	                }
 		}
 	}
 	
-	public void setPresentation(final PresentationDiscrete pres, final BigDecimal interval){
-		if (enabled){
-			set(PRESENTATION,pres.toString());
-			set(RESOLUTION,String.valueOf(interval));	
-		}
+	public void setPresentation(final Presentation pres, final BigDecimal interval){
+            if (enabled){
+                set(PRESENTATION,pres.toString());
+                if(pres==Presentation.DISCRETE_INTERVAL){
+                    if(pres==Presentation.DISCRETE_INTERVAL&&interval==null){
+                        throw new IllegalArgumentException("Null interval was provided while trying to set the presentation to discrete interval.");
+                    }
+                    set(RESOLUTION,String.valueOf(interval)); 
+                } else {
+                    remove(RESOLUTION);
+                }
+        }
 	}
 	
+	
+	/**
+	 * Set UoM for this dimension.
+	 * 
+	 * <code>null</code> is acceptable and leave this UoM blank.
+	 * 
+	 * @param unit UoM for this dimension.
+	 */
+	public void setUnit(final String unit){
+	    if(unit==null||unit.length()<=0){
+	        return;
+	    }
+            if (enabled){
+                set(UNITS,unit);    
+            }
+	}
+	
+	/**
+         * Set UoM for this dimension.
+         * 
+         * <code>null</code> is acceptable and leave this UoM blank.
+         * 
+         * @param unit UoM for this dimension.
+         */
+        public void setUnitSymbol(final String unitSymbol){
+            if(unitSymbol==null||unitSymbol.length()<=0){
+                return;
+            }
+            if (enabled){
+                set(UNIT_SYMBOL,unitSymbol);    
+            }
+        }
 	
 }

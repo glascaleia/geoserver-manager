@@ -1,93 +1,65 @@
-/*
- *    GeoTools - The Open Source Java GIS Toolkit
- *    http://geotools.org
- *
- *    (C) 2002-2011, Open Source Geospatial Foundation (OSGeo)
- *
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation;
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
- */
 package it.geosolutions.geoserver.rest.manager;
 
-import it.geosolutions.geoserver.rest.GeoServerRESTReader;
-import it.geosolutions.geoserver.rest.datastore.StoreIntegrationTest;
-import it.geosolutions.geoserver.rest.decoder.RESTCoverageStore;
+import it.geosolutions.geoserver.rest.GeoserverRESTTest;
+import it.geosolutions.geoserver.rest.decoder.RESTCoverage;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageGranulesList;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageGranulesList.RESTStructuredCoverageGranule;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageIndexSchema;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageIndexSchema.RESTStructuredCoverageIndexAttribute;
-import it.geosolutions.geoserver.rest.encoder.GSAbstractStoreEncoder;
+import it.geosolutions.geoserver.rest.encoder.coverage.GSImageMosaicEncoder;
+import it.geosolutions.geoserver.rest.encoder.metadata.GSDimensionInfoEncoder;
+import it.geosolutions.geoserver.rest.encoder.metadata.GSDimensionInfoEncoder.Presentation;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 /**
- * In order to test that class, make sure to configure a geoserver with a "mosaic" store.
- * 
- * 1) take the mosaic.zip archive contained on src/test/resources/testdata.granules
- * 2) extract it on disk
- * 3) configure an ImageMosaic store on geoserver (name the store as "mosaic"), use the "it.geosolutions" workspace
- * 4) configure a layer on that store (name the coverage as "mosaic" again).
- * 5) on dimensions configuration tab, make sure to enable custom depth and date dimensions.
- * 6) publish it.
+ * Self contained test for working with Structured readers
  * 
  * 
  * @author Simone Giannecchini, simone.giannecchini@geo-solutions.it
  * @author Daniele Romagnoli, GeoSolutions SAS
  *
  */
-public class GeoServerRESTImageMosaicManagerTest extends StoreIntegrationTest {
+public class GeoServerRESTImageMosaicManagerTest extends GeoserverRESTTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GeoServerRESTImageMosaicManagerTest.class);
     
-    /**
-     * @param ignore
-     * @throws IllegalArgumentException
-     * @throws MalformedURLException
-     */
-    public GeoServerRESTImageMosaicManagerTest()
-            throws IllegalArgumentException, MalformedURLException {
-        super(true);
-    }
-
-    @Override
-    public GSAbstractStoreEncoder getStoreEncoderTest() {
-        return null;
-    }
     
     @Test
-    public void createAndDelete() throws IllegalArgumentException, MalformedURLException, UnsupportedEncodingException{
+    public void createAndDelete() throws Exception{
         if (!enabled()) {
             return;
         }
+        // crea the manager
         GeoServerRESTStructuredGridCoverageReaderManager manager = 
             new GeoServerRESTStructuredGridCoverageReaderManager(new URL(RESTURL), RESTUSER, RESTPW);
-        GeoServerRESTReader reader = new GeoServerRESTReader(new URL(RESTURL), RESTUSER, RESTPW);
+        
+        // create mosaic
+        final String workspaceName = "it.geosolutions";
+        final String coverageStoreName = "mosaic";
+        final String coverageName = "mosaic";
+        final String format = "imagemosaic";
+        
+        // upload the mosaic
+        boolean create=manager.create(workspaceName, coverageStoreName,new ClassPathResource("testdata/granules/mosaic.zip").getFile().getAbsolutePath());
+        assertTrue(create);
+        
+        // enable dimension
+        fixDimensions(workspaceName, coverageStoreName, coverageName);
         
         // check index format
-        RESTStructuredCoverageIndexSchema indexFormat = manager.getGranuleIndexSchema("it.geosolutions", "mosaic","mosaic");
-        if (indexFormat == null) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("sample coverage hasn't been found. Make sure to configure the layer before running this test");
-                return;
-            }
-        }
+        RESTStructuredCoverageIndexSchema indexFormat = manager.getGranuleIndexSchema(workspaceName, coverageName,coverageName);
+        assertTrue(create);
+        
         assertNotNull(indexFormat);
         assertFalse(indexFormat.isEmpty());
         assertEquals(5, indexFormat.size());
@@ -104,7 +76,7 @@ public class GeoServerRESTImageMosaicManagerTest extends StoreIntegrationTest {
                 assertEquals("0", element.getMinOccurs());
                 assertEquals("1", element.getMaxOccurs());
                 assertEquals("true", element.getNillable());
-                assertEquals("java.sql.Timestamp", element.getBinding());
+                assertEquals("java.util.Date", element.getBinding());
             } else if (elementName.equals("date")) {
                 assertEquals("0", element.getMinOccurs());
                 assertEquals("1", element.getMaxOccurs());
@@ -120,47 +92,47 @@ public class GeoServerRESTImageMosaicManagerTest extends StoreIntegrationTest {
 
         RESTStructuredCoverageGranulesList granulesList = null;
         RESTStructuredCoverageGranule granule = null;
-        // get some granules by id
-//        manager.getGranuleById("it.geosolutions", "mosaic","mosaic","2");
-//        assertNotNull(granulesList);
-//        assertSame(1, granulesList.size());
-//        assertFalse(granulesList.isEmpty());
-//        RESTStructuredCoverageGranule granule = granulesList.get(0);
-//        assertNotNull(granule);
-//        assertEquals(granule.getAttributeByIndex(4), "1250.0");
-//        assertEquals(granule.getAttributeByName("elevation"), "1250.0");
         
         
         // get with paging
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic" , null, 0, 1);
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName , null, 0, 1);
         assertNotNull(granulesList);
         assertEquals(1, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule);       
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", null, null, 2);
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName, null, null, 2);
         assertNotNull(granulesList);
         assertEquals(2, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule);
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", null, null, null);
+        // get with no paging
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName);
         assertNotNull(granulesList);
         assertEquals(4, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule);   
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", "depth = 100", null, null);
+        // examples of filtering with CQL
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName, "depth = 100", null, null);
         assertNotNull(granulesList);
         assertEquals(2, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule); 
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", "depth = 100 AND date='20081101T0000000'", null, null);
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName, "depth = 100 AND date='20081101T0000000'", null, null);
+        assertNotNull(granulesList);
+        assertEquals(1, granulesList.size());
+        assertFalse(granulesList.isEmpty());
+        granule = granulesList.get(0);
+        assertNotNull(granule); 
+        
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName, "location LIKE 'NCOM_wattemp%'", 0, 1);
         assertNotNull(granulesList);
         assertEquals(1, granulesList.size());
         assertFalse(granulesList.isEmpty());
@@ -169,96 +141,159 @@ public class GeoServerRESTImageMosaicManagerTest extends StoreIntegrationTest {
         
         // remove by filter
         final String fileLocation = "NCOM_wattemp_100_20081101T0000000_12.tiff";
-        boolean result = manager.removeGranulesByCQL("it.geosolutions", "mosaic", "mosaic", "location = '" + fileLocation + "'");
+        boolean result = manager.removeGranulesByCQL(workspaceName, coverageStoreName, coverageName, "location = '" + fileLocation + "'");
         Assert.assertTrue(result);
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", null, null, null);
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName);
         assertNotNull(granulesList);
         assertEquals(3, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule);
         
-        // Readding that granule
-        RESTCoverageStore store = reader.getCoverageStore("it.geosolutions", "mosaic");
-        final String urlString = store.getURL();
-        final URL url = new URL(urlString); 
-        final File file = urlToFile(url);
-        final String filePath = file.getAbsolutePath();
-        
-        // use reflection to get the store URL since coveragestore only returns name and workspace
-        result = manager.createOrHarvestExternal("it.geosolutions", "mosaic", "imagemosaic", filePath + File.separatorChar + fileLocation );
+        // Readding that granule with harvest
+        result = manager.harvestExternal(workspaceName, coverageStoreName, format, new ClassPathResource("testdata/granules/NCOM_wattemp_100_20081101T0000000_12.tiff").getFile().getAbsolutePath() );
         Assert.assertTrue(result);
         
-        granulesList = manager.getGranules("it.geosolutions", "mosaic", "mosaic", null, null, null);
+        granulesList = manager.getGranules(workspaceName, coverageStoreName, coverageName, null, null, null);
         assertNotNull(granulesList);
         assertEquals(4, granulesList.size());
         assertFalse(granulesList.isEmpty());
         granule = granulesList.get(0);
         assertNotNull(granule);
         
+        
+        // delete
+        delete(workspaceName, coverageStoreName);
     }
+
+
+    /**
+     * This method enables the various dimensions for the coverage autocreated for this test.
+     * 
+     * <p> Notice that 
+     * @param wsName the workspace
+     * @param coverageStoreName the coverage store name
+     * @param csname the coverage name
+     */
     
+    private void fixDimensions(String wsName, String coverageStoreName, String csname) {
+        final GSImageMosaicEncoder coverageEncoder = copyParameters(wsName, coverageStoreName,
+                csname);
+  
+               
+        // activate time dimension
+        final GSDimensionInfoEncoder time=new GSDimensionInfoEncoder(true);
+        time.setUnit("Seconds");
+        time.setUnitSymbol("s");
+        time.setPresentation(Presentation.CONTINUOUS_INTERVAL);
+        coverageEncoder.setMetadataDimension("time", time);
+        
+        // activate run which is a custom dimension
+        final GSDimensionInfoEncoder date=new GSDimensionInfoEncoder(true);
+        date.setPresentation(Presentation.LIST);
+        coverageEncoder.setMetadataDimension("date", date,true);
+        
+        final GSDimensionInfoEncoder depth=new GSDimensionInfoEncoder(true);
+        depth.setPresentation(Presentation.LIST);
+        depth.setUnit("Meters");
+        depth.setUnitSymbol("m");
+        coverageEncoder.setMetadataDimension("depth", depth,true);
+        
+        // persiste the changes
+        boolean config=publisher.configureCoverage(coverageEncoder, wsName, csname);
+        assertTrue(config);
+       
+    }
+
+
+    /**
+     * @param wsName
+     * @param coverageStoreName
+     * @param csname
+     * @return
+     * @throws NumberFormatException
+     */
+    private GSImageMosaicEncoder copyParameters(String wsName, String coverageStoreName,
+            String csname) throws NumberFormatException {
+        // get current config for the coverage to extract the params we want to set again
+        final RESTCoverage coverage = reader.getCoverage(wsName, coverageStoreName, csname);
+        final Map<String, String> params = coverage.getParametersList();     
+        
+        // prepare and fill the encoder 
+        final GSImageMosaicEncoder coverageEncoder = new GSImageMosaicEncoder();
+        coverageEncoder.setName("mosaic");
+        
+        // set the current params, change here if you want to change the values
+        for(Map.Entry<String, String> entry:params.entrySet()){
+            if(entry.getKey().equals(GSImageMosaicEncoder.allowMultithreading)){
+                coverageEncoder.setAllowMultithreading(Boolean.parseBoolean(entry.getValue()));
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.backgroundValues)){
+                coverageEncoder.setBackgroundValues(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.filter)){
+                coverageEncoder.setFilter(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.inputTransparentColor)){
+                coverageEncoder.setInputTransparentColor(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.maxAllowedTiles)){
+                coverageEncoder.setMaxAllowedTiles(Integer.parseInt(entry.getValue()));
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.MERGEBEHAVIOR)){
+                coverageEncoder.setMergeBehavior(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.outputTransparentColor)){
+                coverageEncoder.setOutputTransparentColor(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.SORTING)){
+                coverageEncoder.setSORTING(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.SUGGESTED_TILE_SIZE)){
+                coverageEncoder.setSUGGESTED_TILE_SIZE(entry.getValue());
+                continue;
+            }
+            
+            if(entry.getKey().equals(GSImageMosaicEncoder.USE_JAI_IMAGEREAD)){
+                coverageEncoder.setUSE_JAI_IMAGEREAD(Boolean.parseBoolean(entry.getValue()));
+                continue;
+            }
+            
+        }
+        return coverageEncoder;
+    }
     
     /**
-     * This method has been copied from org.geotools.data.DataUtilities
-     * 
-     * Takes a URL and converts it to a File. The attempts to deal with Windows UNC format specific
-     * problems, specifically files located on network shares and different drives.
-     * 
-     * If the URL.getAuthority() returns null or is empty, then only the url's path property is used
-     * to construct the file. Otherwise, the authority is prefixed before the path.
-     * 
-     * It is assumed that url.getProtocol returns "file".
-     * 
-     * Authority is the drive or network share the file is located on. Such as "C:", "E:",
-     * "\\fooServer"
-     * 
-     * @param url
-     *            a URL object that uses protocol "file"
-     * @return a File that corresponds to the URL's location
+     * Deletes the provided coverage recursively with purging.
+     * @param workspaceName
+     * @param coverageStoreName
+     * @throws Exception
      */
-    private static File urlToFile(URL url) {
-        if (!"file".equals(url.getProtocol())) {
-            return null; // not a File URL
+    private void delete(String workspaceName, String coverageStoreName) throws Exception {
+        if (!enabled()) {
+            return;
         }
-        String string = url.toExternalForm();
-        if (string.contains("+")) {
-            // this represents an invalid URL created using either
-            // file.toURL(); or
-            // file.toURI().toURL() on a specific version of Java 5 on Mac
-            string = string.replace("+", "%2B");
-        }
-        try {
-            string = URLDecoder.decode(string, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Could not decode the URL to UTF-8 format", e);
-        }
-
-        String path3;
-
-        String simplePrefix = "file:/";
-        String standardPrefix = "file://";
-        String os = System.getProperty("os.name");
-
-        if (os.toUpperCase().contains("WINDOWS") && string.startsWith(standardPrefix)) {
-            // win32: host/share reference
-            path3 = string.substring(standardPrefix.length() - 2);
-        } else if (string.startsWith(standardPrefix)) {
-            path3 = string.substring(standardPrefix.length());
-        } else if (string.startsWith(simplePrefix)) {
-            path3 = string.substring(simplePrefix.length() - 1);
-        } else {
-            String auth = url.getAuthority();
-            String path2 = url.getPath().replace("%20", " ");
-            if (auth != null && !auth.equals("")) {
-                path3 = "//" + auth + path2;
-            } else {
-                path3 = path2;
-            }
-        }
-
-        return new File(path3);
+        
+        // delete mosaic
+        boolean result = publisher.removeCoverageStore(workspaceName, coverageStoreName, true);
+        assertTrue(result);
     }
-
+ 
 }

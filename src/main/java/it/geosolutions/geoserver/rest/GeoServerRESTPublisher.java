@@ -1,7 +1,7 @@
 /*
  *  GeoServer-Manager - Simple Manager Library for GeoServer
  *  
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2013 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,9 +24,10 @@
  */
 package it.geosolutions.geoserver.rest;
 
-import it.geosolutions.geoserver.rest.decoder.RESTCoverageList;
+import it.geosolutions.geoserver.rest.decoder.RESTCoverage;
 import it.geosolutions.geoserver.rest.decoder.RESTCoverageStore;
 import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageGranulesList;
+import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
 import it.geosolutions.geoserver.rest.decoder.utils.NameLinkElem;
 import it.geosolutions.geoserver.rest.encoder.GSBackupEncoder;
 import it.geosolutions.geoserver.rest.encoder.GSLayerEncoder;
@@ -39,15 +40,18 @@ import it.geosolutions.geoserver.rest.encoder.GSWorkspaceEncoder;
 import it.geosolutions.geoserver.rest.encoder.coverage.GSCoverageEncoder;
 import it.geosolutions.geoserver.rest.encoder.feature.GSFeatureTypeEncoder;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager;
+import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager.ConfigureCoveragesOption;
+import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Iterator;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FilenameUtils;
@@ -89,6 +93,8 @@ public class GeoServerRESTPublisher {
     public GeoServerRESTPublisher() {
     }
 
+
+    private final GeoServerRESTStyleManager styleManager;
     /**
      * Creates a <TT>GeoServerRESTPublisher</TT> to connect against a GeoServer
      * instance with the given URL and user credentials.
@@ -102,6 +108,14 @@ public class GeoServerRESTPublisher {
         this.restURL = HTTPUtils.decurtSlash(restURL);
         this.gsuser = username;
         this.gspass = password;
+
+        URL url = null;
+        try {
+            url = new URL(restURL);
+        } catch (MalformedURLException ex) {
+            LOGGER.error("Bad URL: Calls to GeoServer are going to fail" , ex);
+        }
+        styleManager = new GeoServerRESTStyleManager(url, username, password);
     }
 
     // ==========================================================================
@@ -318,20 +332,7 @@ public class GeoServerRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      */
     public boolean publishStyle(String sldBody) {
-        /*
-         * This is the equivalent call with cUrl:
-         * 
-         * {@code curl -u admin:geoserver -XPOST \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
-         * http://$GSIP:$GSPORT/$SERVLET/rest/styles}
-         */
-        try {
-            return publishStyle(sldBody, null);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(e.getLocalizedMessage(), e);
-            }
-        }
-        return false;
+        return styleManager.publishStyle(sldBody);
     }
 
     /**
@@ -345,23 +346,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean publishStyle(final String sldBody, final String name)
             throws IllegalArgumentException {
-        /*
-         * This is the equivalent call with cUrl:
-         * 
-         * {@code curl -u admin:geoserver -XPOST \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
-         * http://$GSIP:$GSPORT/$SERVLET/rest/styles?name=name}
-         */
-        if (sldBody == null || sldBody.isEmpty()) {
-            throw new IllegalArgumentException("The style body may not be null or empty");
-        }
-        StringBuilder sUrl = new StringBuilder(restURL);
-        sUrl.append("/rest/styles");
-        if (name != null && !name.isEmpty()) {
-            sUrl.append("?name=").append(name);
-        }
-        final String result = HTTPUtils.post(sUrl.toString(), sldBody,
-                "application/vnd.ogc.sld+xml", gsuser, gspass);
-        return result != null;
+        return styleManager.publishStyle(sldBody, name);
     }
 
     /**
@@ -372,7 +357,7 @@ public class GeoServerRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      */
     public boolean publishStyle(File sldFile) {
-        return publishStyle(sldFile, null);
+        return styleManager.publishStyle(sldFile);
     }
 
     /**
@@ -384,14 +369,7 @@ public class GeoServerRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      */
     public boolean publishStyle(File sldFile, String name) {
-        String sUrl = restURL + "/rest/styles";
-        if (name != null && !name.isEmpty()) {
-            sUrl += "?name=" + encode(name);
-        }
-        LOGGER.debug("POSTing new style " + name + " to " + sUrl);
-        String result = HTTPUtils
-                .post(sUrl, sldFile, Format.SLD.getContentType(), gsuser, gspass);
-        return result != null;
+        return styleManager.publishStyle(sldFile, name);
     }
 
     /**
@@ -406,24 +384,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean updateStyle(final String sldBody, final String name)
             throws IllegalArgumentException {
-        /*
-         * This is the equivalent call with cUrl:
-         * 
-         * {@code curl -u admin:geoserver -XPUT \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
-         * http://$GSIP:$GSPORT/$SERVLET/rest/styles/$NAME}
-         */
-        if (sldBody == null || sldBody.isEmpty()) {
-            throw new IllegalArgumentException("The style body may not be null or empty");
-        } else if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("The style name may not be null or empty");
-        }
-
-        final StringBuilder sUrl = new StringBuilder(restURL);
-        sUrl.append("/rest/styles/").append(encode(name));
-
-        final String result = HTTPUtils.put(sUrl.toString(), sldBody,
-                "application/vnd.ogc.sld+xml", gsuser, gspass);
-        return result != null;
+        return styleManager.updateStyle(sldBody, name);
     }
 
     /**
@@ -439,19 +400,7 @@ public class GeoServerRESTPublisher {
     public boolean updateStyle(final File sldFile, final String name)
             throws IllegalArgumentException {
 
-        if (sldFile == null) {
-            throw new IllegalArgumentException("Unable to updateStyle using a null parameter file");
-        } else if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("The style name may not be null or empty");
-        }
-
-        final StringBuilder sUrl = new StringBuilder(restURL);
-        sUrl.append("/rest/styles/").append(encode(name));
-
-        final String result = HTTPUtils.put(sUrl.toString(), sldFile,
-                "application/vnd.ogc.sld+xml", gsuser, gspass);
-        return result != null;
-
+        return styleManager.updateStyle(sldFile, name);
     }
 
     /**
@@ -468,25 +417,8 @@ public class GeoServerRESTPublisher {
      */
     public boolean removeStyle(String styleName, final boolean purge)
             throws IllegalArgumentException {
-        if (styleName == null || styleName.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Check styleName parameter, it may never be null or empty");
-        }
 
-        final StringBuffer sUrl = new StringBuffer(restURL);
-
-        // check style name
-        // TODO may we whant to throw an exception instead of
-        // change style name?
-        styleName = styleName.replaceAll(":", "_");
-        styleName = encode(styleName);
-
-        sUrl.append("/rest/styles/").append(styleName);
-        if (purge) {
-            sUrl.append("?purge=true");
-        }
-
-        return HTTPUtils.delete(sUrl.toString(), gsuser, gspass);
+        return styleManager.removeStyle(styleName, purge);
     }
 
     /**
@@ -499,15 +431,73 @@ public class GeoServerRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      */
     public boolean removeStyle(String styleName) {
-        try {
-            return removeStyle(styleName, true);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(e.getLocalizedMessage(), e);
-            }
-        }
-        return false;
+        return styleManager.removeStyle(styleName);
     }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#
+     */
+    public boolean publishStyleInWorkspace(String workspace, String sldBody) {
+        return styleManager.publishStyleInWorkspace(workspace, sldBody);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#
+     */
+    public boolean publishStyleInWorkspace(String workspace, String sldBody, String name) throws IllegalArgumentException {
+        return styleManager.publishStyleInWorkspace(workspace, sldBody, name);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String, java.io.File)
+     */
+    public boolean publishStyleInWorkspace(String workspace, File sldFile) {
+        return styleManager.publishStyleInWorkspace(workspace, sldFile);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#publishStyleInWorkspace(java.lang.String, java.io.File, java.lang.String)
+     */
+    public boolean publishStyleInWorkspace(String workspace, File sldFile, String name) {
+        return styleManager.publishStyleInWorkspace(workspace, sldFile, name);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public boolean updateStyleInWorkspace(String workspace, String sldBody, String name) throws IllegalArgumentException {
+        return styleManager.updateStyleInWorkspace(workspace, sldBody, name);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#updateStyleInWorkspace(java.lang.String, java.io.File, java.lang.String)
+     */
+    public boolean updateStyleInWorkspace(String workspace, File sldFile, String name) throws IllegalArgumentException {
+        return styleManager.updateStyleInWorkspace(workspace, sldFile, name);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String, java.lang.String, boolean)
+     */
+    public boolean removeStyleInWorkspace(String workspace, String styleName, boolean purge) throws IllegalArgumentException {
+        return styleManager.removeStyleInWorkspace(workspace, styleName, purge);
+    }
+
+    /**
+     * @since GeoServer 2.2
+     * @see GeoServerRESTStyleManager#removeStyleInWorkspace(java.lang.String, java.lang.String)
+     */
+    public boolean removeStyleInWorkspace(String workspace, String styleName) {
+        return styleManager.removeStyleInWorkspace(workspace, styleName);
+    }
+
 
     // ==========================================================================
     // === DATASTORE PUBLISHING
@@ -543,6 +533,7 @@ public class GeoServerRESTPublisher {
         /**
          * @deprecated use {@link StoreType#toString()}
          */
+        @Override
         public String toString() {
             return this.name().toLowerCase();
         }
@@ -1050,9 +1041,8 @@ public class GeoServerRESTPublisher {
             LOGGER.info("DB layer successfully added (layer:" + layername + ")");
 
             if (layerEncoder == null) {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("GSLayerEncoder is null: Unable to find the defauldStyle for this layer");
-                }
+                if (LOGGER.isErrorEnabled())
+                    LOGGER.error("GSLayerEncoder is null: Unable to find the defaultStyle for this layer");
                 return false;
             }
 
@@ -2171,36 +2161,7 @@ public class GeoServerRESTPublisher {
      */
     public boolean removeDatastore(String workspace, String storename, final boolean recurse)
             throws IllegalArgumentException {
-        try {
-            if (workspace == null || storename == null) {
-                throw new IllegalArgumentException("Arguments may not be null!");
-            }
-            if (workspace.isEmpty() || storename.isEmpty()) {
-                throw new IllegalArgumentException("Arguments may not be empty!");
-            }
-
-            final StringBuilder url = new StringBuilder(restURL);
-            url.append("/rest/workspaces/").append(workspace).append("/datastores/")
-                    .append(storename);
-            if (recurse) {
-                url.append("?recurse=true");
-            }
-            final URL deleteStore = new URL(url.toString());
-
-            boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
-            if (!deleted) {
-                LOGGER.warn("Could not delete datastore " + workspace + ":" + storename);
-            } else {
-                LOGGER.info("Datastore successfully deleted " + workspace + ":" + storename);
-            }
-
-            return deleted;
-        } catch (MalformedURLException ex) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(ex.getLocalizedMessage(), ex);
-            }
-            return false;
-        }
+        return removeStore(workspace, storename, StoreType.DATASTORES, recurse);
     }
 
     /**
@@ -2212,14 +2173,7 @@ public class GeoServerRESTPublisher {
      * @deprecated use {@link #removeCoverageStore(String, String, boolean)}
      */
     public boolean removeCoverageStore(String workspace, String storename) {
-        try {
-            return removeCoverageStore(workspace, storename, true);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Arguments may not be null or empty!", e);
-            }
-        }
-        return false;
+        return removeCoverageStore(workspace, storename, true);
     }
 
     /**
@@ -2232,6 +2186,21 @@ public class GeoServerRESTPublisher {
      */
     public boolean removeCoverageStore(final String workspace, final String storename,
             final boolean recurse) throws IllegalArgumentException {
+        return removeStore(workspace, storename, StoreType.COVERAGESTORES, recurse);
+    }
+
+    /**
+     * Remove a given Datastore in a given Workspace.
+     * 
+     * @param workspace The name of the workspace
+     * @param storename The name of the Datastore to remove.
+     * @param the {@link StoreType} type
+     * @param recurse if remove should be performed recursively
+     * @throws IllegalArgumentException if workspace or storename are null or empty
+     * @return <TT>true</TT> if the store was successfully removed.
+     */
+    private boolean removeStore(String workspace, String storename, StoreType type,
+            final boolean recurse) throws IllegalArgumentException {
         try {
             if (workspace == null || storename == null) {
                 throw new IllegalArgumentException("Arguments may not be null!");
@@ -2241,7 +2210,7 @@ public class GeoServerRESTPublisher {
             }
 
             final StringBuilder url = new StringBuilder(restURL);
-            url.append("/rest/workspaces/").append(workspace).append("/coveragestores/")
+            url.append("/rest/workspaces/").append(workspace).append("/").append(type).append("/")
                     .append(storename);
             if (recurse) {
                 url.append("?recurse=true");
@@ -2250,12 +2219,12 @@ public class GeoServerRESTPublisher {
 
             boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
             if (!deleted) {
-                LOGGER.warn("Could not delete CoverageStore " + workspace + ":" + storename);
+                LOGGER.warn("Could not delete store " + workspace + ":" + storename);
             } else {
-                LOGGER.info("CoverageStore successfully deleted " + workspace + ":" + storename);
+                LOGGER.info("Store successfully deleted " + workspace + ":" + storename);
             }
-            return deleted;
 
+            return deleted;
         } catch (MalformedURLException ex) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(ex.getLocalizedMessage(), ex);
@@ -2273,14 +2242,7 @@ public class GeoServerRESTPublisher {
      * @deprecated {@link #removeWorkspace(String, boolean)}
      */
     public boolean removeWorkspace(String workspace) {
-        try {
-            return removeWorkspace(workspace, false);
-        } catch (IllegalArgumentException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Arguments may not be null or empty!", e);
-            }
-        }
-        return false;
+        return removeWorkspace(workspace, false);
     }
 
     /**
@@ -2309,7 +2271,9 @@ public class GeoServerRESTPublisher {
                     workspace);
             if (recurse) {
                 url.append("?recurse=true");
-            }
+
+            deleteStylesForWorkspace(workspace); // !!! workaround
+
             final URL deleteUrl = new URL(url.toString());
             boolean deleted = HTTPUtils.delete(deleteUrl.toExternalForm(), gsuser, gspass);
             if (!deleted) {
@@ -2324,6 +2288,17 @@ public class GeoServerRESTPublisher {
                 LOGGER.error(ex.getLocalizedMessage(), ex);
             }
             return false;
+        }
+    }
+
+    /**
+     *  workaround: geoserver does not delete styles inside workspaces
+     * https://jira.codehaus.org/browse/GEOS-5986
+     */
+    private void deleteStylesForWorkspace(String workspace) {
+        RESTStyleList styles = styleManager.getStyles(workspace);
+        for (NameLinkElem nameLinkElem : styles) {
+            removeStyleInWorkspace(workspace, nameLinkElem.getName(), true);
         }
     }
 
@@ -2445,16 +2420,16 @@ public class GeoServerRESTPublisher {
 
         if (store != null) {
             String storeTag = storeType.getTypeName();
-//            switch (storeType) {
-//            case COVERAGESTORES:
-//                storeTag = storeType.toString().replaceAll("store", "");
-//                break;
-//            case DATASTORES:
-//                storeTag = "featureTypes";
-//                break;
-//            default:
-//                throw new IllegalArgumentException("Unrecognized type");
-//            }
+            // switch (storeType) {
+            // case COVERAGESTORES:
+            // storeTag = storeType.toString().replaceAll("store", "");
+            // break;
+            // case DATASTORES:
+            // storeTag = "featureTypes";
+            // break;
+            // default:
+            // throw new IllegalArgumentException("Unrecognized type");
+            // }
 
             String startTag = "<" + storeTag + ">";
             int start = store.indexOf(startTag);
@@ -2498,11 +2473,11 @@ public class GeoServerRESTPublisher {
     }
 
     // ==========================================================================
-    // === MISCELLANEA
+    // === MISCELLANEOUS
     // ==========================================================================
     /**
-     * Allows to configure some layer attributes such and DefaultStyle
-     *
+     * Allows to configure some layer attributes such as DefaultStyle
+     * 
      * @param workspace
      * @param resourceName the name of the resource to use (featureStore or
      * coverageStore name)
@@ -2628,19 +2603,31 @@ public class GeoServerRESTPublisher {
     }
 
     /**
-     * Configure an existent coverage in a given workspace and coverage store
-     *
-     * @param ce contains the coverage name to configure and the configuration
-     * to apply
+     * Configure an existing coverage in a given workspace and coverage store
+     * 
+     * @param ce contains the coverage name to configure and the configuration to apply
      * @param wsname the workspace to search for existent coverage
      * @param csname the coverage store to search for existent coverage
      * @return true if success
      */
     public boolean configureCoverage(final GSCoverageEncoder ce, final String wsname,
             final String csname) {
-        final String cname = ce.getName();
-        if (cname == null) {
-            if (LOGGER.isErrorEnabled()) {
+        return configureCoverage(ce, wsname, csname, ce.getName());
+    }    
+
+    /**
+     * Configure an existing coverage in a given workspace and coverage store
+     * 
+     * @param ce contains the coverage name to configure and the configuration to apply
+     * @param wsname the workspace to search for existent coverage
+     * @param csname the coverage store to search for existent coverage
+     * @param coverageName the name of the coverage, useful for changing name for the coverage itself
+     * @return true if success
+     */
+    public boolean configureCoverage(final GSCoverageEncoder ce, final String wsname,
+            final String csname, final String coverageName) {
+        if (coverageName == null) {
+            if (LOGGER.isErrorEnabled())
                 LOGGER.error("Unable to configure a coverage with no name try using GSCoverageEncoder.setName(String)");
             }
             return false;
@@ -2655,45 +2642,45 @@ public class GeoServerRESTPublisher {
             }
             return false;
         }
-        final RESTCoverageList covList = reader.getCoverages(wsname, csname);
-        if (covList.isEmpty()) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("No coverages found in new coveragestore " + csname);
-            }
-            return false;
-        }
-        final Iterator<NameLinkElem> it = covList.iterator();
-        boolean found = false;
-        while (it.hasNext()) {
-            NameLinkElem nameElem = it.next();
-            if (nameElem.getName().equals(cname)) {
-                found = true;
-                break;
-            }
-        }
+        
+        // optimized search, left the old code for reference 
+        RESTCoverage coverage = reader.getCoverage(wsname, csname, coverageName);
+//        final RESTCoverageList covList = reader.getCoverages(wsname, csname);
+//        if (covList==null||covList.isEmpty()) {
+//            if (LOGGER.isErrorEnabled())
+//                LOGGER.error("No coverages found in new coveragestore " + csname);
+//            return false;
+//        }
+//        final Iterator<NameLinkElem> it = covList.iterator();
+//        while (it.hasNext()) {
+//            NameLinkElem nameElem = it.next();
+//            if (nameElem.getName().equals(coverageName)) {
+//                found = true;
+//                break;
+//            }
+//        }
         // if no coverage to configure is found return false
-        if (!found) {
-            if (LOGGER.isErrorEnabled()) {
+        if (coverage==null) {
+            if (LOGGER.isErrorEnabled())
                 LOGGER.error("No coverages found in new coveragestore " + csname + " called "
-                        + cname);
-            }
+                        + coverageName);
             return false;
         }
 
         // configure the selected coverage
         final String url = restURL + "/rest/workspaces/" + wsname + "/coveragestores/" + csname
-                + "/coverages/" + cname + ".xml";
+                + "/coverages/" + coverageName + ".xml";
 
         final String xmlBody = ce.toString();
         final String sendResult = HTTPUtils.putXml(url, xmlBody, gsuser, gspass);
         if (sendResult != null) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Coverage successfully configured " + wsname + ":" + csname + ":"
-                        + cname);
+                        + coverageName);
             }
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("Error configuring coverage " + wsname + ":" + csname + ":" + cname
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Error configuring coverage " + wsname + ":" + csname + ":" + coverageName
                         + " (" + sendResult + ")");
             }
         }
@@ -2855,6 +2842,8 @@ public class GeoServerRESTPublisher {
     }
 
     // ==> StructuredCoverageGridReader
+
+    // ==> StructuredCoverageGridReader
     /**
      * Create a store or harvest the coverage from the provided <b>external</b>
      * path.
@@ -2867,11 +2856,12 @@ public class GeoServerRESTPublisher {
      * @return <code>true</code> if the call succeeds or <code>false</code>
      * otherwise.
      */
-    public boolean createOrHarvestExternal(String workspace, String coverageStore, String format, String path) {
+    public boolean harvestExternal(String workspace, String coverageStore, String format,
+            String path) {
         try {
-            GeoServerRESTStructuredGridCoverageReaderManager manager =
-                    new GeoServerRESTStructuredGridCoverageReaderManager(new URL(restURL), gsuser, gspass);
-            return manager.createOrHarvestExternal(workspace, coverageStore, format, path);
+            GeoServerRESTStructuredGridCoverageReaderManager manager = new GeoServerRESTStructuredGridCoverageReaderManager(
+                    new URL(restURL), gsuser, gspass);
+            return manager.harvestExternal(workspace, coverageStore, format, path);
         } catch (IllegalArgumentException e) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(e.getLocalizedMessage(), e);
@@ -2882,6 +2872,165 @@ public class GeoServerRESTPublisher {
             }
         }
         return false;
+    }
+
+    /**
+     * Create a new ImageMosaic with the provided configuration provided as a zip file.
+     * 
+     * <p>
+     * This call configures all the coverages contained in the ImageMosaic.
+     * 
+     * @param workspace the GeoServer workspace
+     * @param coverageStore the GeoServer coverageStore
+     * @param the absolute path to the file to upload
+     * 
+     * @return <code>true</code> if the call succeeds or <code>false</code> otherwise.
+     * @since geoserver-2.4.0, geoserver-mng-1.6.0
+     */
+    public boolean createImageMosaic(String workspace, String coverageStore, String path) {
+        return createImageMosaic(workspace, coverageStore, path, ConfigureCoveragesOption.ALL);
+    }
+    
+    /**
+     * Create a new ImageMosaic with the provided configuration provided as a zip file.
+     * 
+     * <p>
+     * With the options configure we can decide whether or not to configure or not the coverages contained in the ImageMosaic.
+     * 
+     * @param workspace the GeoServer workspace
+     * @param coverageStore the GeoServer coverageStore
+     * @param the absolute path to the file to upload
+     * @param configureOpt tells GeoServer whether to configure all coverages in this mosaic (ALL) or none of them (NONE).
+     * 
+     * @return <code>true</code> if the call succeeds or <code>false</code> otherwise.
+     * @since geoserver-2.4.0, geoserver-mng-1.6.0
+     */
+    public boolean createImageMosaic(String workspace, String coverageStore, String path, ConfigureCoveragesOption configureOpt) {
+        // checks
+        checkString(workspace);
+        checkString(coverageStore);
+        checkString(path);
+        final File zipFile= new File(path);
+        if(!zipFile.exists()||!zipFile.isFile()||!zipFile.canRead()){
+            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: "+path);
+        }
+        // is it a zip?
+        ZipFile zip=null;
+        try{
+            zip= new ZipFile(zipFile);
+            zip.getName();
+        }catch (Exception e) {
+            LOGGER.trace(e.getLocalizedMessage(),e.getStackTrace());
+            throw new IllegalArgumentException("The provided pathname does not point to a valide zip file: "+path);
+        }finally{
+            if(zip!=null){
+                try {
+                    zip.close();
+                } catch (IOException e) {
+                    // swallow
+                    LOGGER.trace(e.getLocalizedMessage(),e.getStackTrace());
+                }
+            }
+        }
+
+        // create URL
+        StringBuilder ss=HTTPUtils.append(restURL, "/rest/workspaces/", workspace, "/coveragestores/",
+                coverageStore, "/", UploadMethod.EXTERNAL.toString(), ".imagemosaic");
+        switch(configureOpt){
+        case ALL:
+            break;
+        case NONE:
+            ss.append("?configure=none");
+            break;
+        default: 
+            throw new IllegalArgumentException("Unrecognized COnfigureOption: "+configureOpt);
+        }
+        String sUrl = ss.toString();
+
+        // POST request
+        String result = HTTPUtils.put(sUrl, zipFile, "application/zip", gsuser, gspass);
+        return result != null;
+    }
+
+    /**
+     * Remove a granule from a structured coverage by id.
+     * 
+     * @param workspace the GeoServer workspace
+     * @param coverageStore the GeoServer coverageStore
+     * @param coverage the name of the target coverage from which we are going to remove
+     * @param filter the absolute path to the file to upload
+     * 
+     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
+     * 
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
+    public boolean removeGranuleById(final String workspace, String coverageStore, String coverage,
+            String granuleId) {
+        try {
+            GeoServerRESTStructuredGridCoverageReaderManager manager = new GeoServerRESTStructuredGridCoverageReaderManager(
+                    new URL(restURL), gsuser, gspass);
+            return manager.removeGranuleById(workspace, coverageStore, coverage, granuleId);
+        } catch (IllegalArgumentException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        } catch (MalformedURLException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Remove granules from a structured coverage, by providing a CQL filter.
+     * 
+     * @param workspace the GeoServer workspace
+     * @param coverageStore the GeoServer coverageStore
+     * @param coverage the name of the target coverage from which we are going to remove
+     * @param filter the absolute path to the file to upload
+     * 
+     * @return <code>null</code> in case the call does not succeed, or an instance of {@link RESTStructuredCoverageGranulesList}.
+     * 
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
+    public boolean removeGranulesByCQL(final String workspace, String coverageStore,
+            String coverage, String filter) throws UnsupportedEncodingException {
+        try {
+            GeoServerRESTStructuredGridCoverageReaderManager manager = new GeoServerRESTStructuredGridCoverageReaderManager(
+                    new URL(restURL), gsuser, gspass);
+            return manager.removeGranulesByCQL(workspace, coverageStore, coverage, filter);
+        } catch (IllegalArgumentException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        } catch (MalformedURLException e) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(e.getLocalizedMessage(), e);
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * Check the provided string for not being null or empty.
+     * 
+     * <p>
+     * It throws an exception in case the string is either null or empty.
+     * 
+     * @param string the {@link String} to be checked
+     */
+    private static void checkString(String string) {
+        if (string == null) {
+            throw new NullPointerException("Provided string is is null!");
+        }
+        if (string.length() <= 0) {
+            throw new IllegalArgumentException("Provided string is is empty!");
+        }
+    
     }
 
     /**
