@@ -125,6 +125,7 @@ public class CASHTTPUtils {
     public static String get(String url, String username, String pw) {
         //
         url = appendProxyTicketToURL(url);
+        LOGGER.debug("Url with proxy ticket: " + url);
         //
         GetMethod httpMethod = null;
         HttpClient client = new HttpClient();
@@ -133,6 +134,7 @@ public class CASHTTPUtils {
             httpMethod = new GetMethod(url);
             connectionManager.getParams().setConnectionTimeout(5000);
             int status = client.executeMethod(httpMethod);
+            LOGGER.info("Get Response Status Log: " + status);
             if (status == HttpStatus.SC_OK) {
                 InputStream is = httpMethod.getResponseBodyAsStream();
                 String response = IOUtils.toString(is);
