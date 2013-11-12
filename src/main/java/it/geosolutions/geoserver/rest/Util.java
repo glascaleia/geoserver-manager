@@ -22,12 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package it.geosolutions.geoserver.rest;
 
 import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -43,15 +45,57 @@ public class Util {
         List<RESTStyle> styles = new ArrayList<RESTStyle>();
 
         RESTStyle style = reader.getStyle(stylename);
-        if(style != null)
+        if (style != null) {
             styles.add(style);
+        }
 
         for (String workspace : reader.getWorkspaceNames()) {
             style = reader.getStyle(workspace, stylename);
-            if(style != null)
+            if (style != null) {
                 styles.add(style);
+            }
         }
 
         return styles;
+    }
+
+    public static <T> List<T> safeList(List<T> list) {
+        return list == null ? Collections.EMPTY_LIST : list;
+    }
+
+    public static <T> Collection<T> safeCollection(Collection<T> collection) {
+        return collection == null ? Collections.EMPTY_SET : collection;
+    }
+
+    public static <TK, TV> Map<TK, TV> safeMap(Map<TK, TV> map) {
+        return map == null ? Collections.EMPTY_MAP : map;
+    }
+
+    public static char getParameterSeparator(String url) {
+        char parameterSeparator = '?';
+        if (url.contains("?")) {
+            parameterSeparator = '&';
+        }
+        return parameterSeparator;
+    }
+
+    public static char getParameterSeparator(StringBuilder url) {
+        char parameterSeparator = '?';
+        if (url.indexOf("?") != -1) {
+            parameterSeparator = '&';
+        }
+        return parameterSeparator;
+    }
+
+    public static boolean appendParameter(StringBuilder url, String parameterName,
+            String parameterValue) {
+        boolean result = false;
+        if (parameterName != null && !parameterName.isEmpty()
+                && parameterValue != null && !parameterValue.isEmpty()) {
+            char parameterSeparator = getParameterSeparator(url);
+            url.append(parameterSeparator).append(parameterName.trim())
+                    .append('=').append(parameterValue.trim());
+        }
+        return result;
     }
 }
