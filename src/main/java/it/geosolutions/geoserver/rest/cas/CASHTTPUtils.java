@@ -24,6 +24,7 @@
  */
 package it.geosolutions.geoserver.rest.cas;
 
+import it.geosolutions.geoserver.rest.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,10 +74,7 @@ public class CASHTTPUtils {
                     + "Impossible to obtain proxy ticket for URL: " + url);
         }
         try {
-            char parameterSeparator = '?';
-            if (url.contains("?")) {
-                parameterSeparator = '&';
-            }
+            char parameterSeparator = Util.getParameterSeparator(url);
             url += parameterSeparator + "ticket=" + URLEncoder.
                     encode(proxyTicket, "UTF-8");
         } catch (UnsupportedEncodingException ex) {

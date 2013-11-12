@@ -4,6 +4,7 @@
  */
 package it.geosolutions.geoserver.rest.cas;
 
+import it.geosolutions.geoserver.rest.Util;
 import it.geosolutions.geoserver.rest.decoder.RESTDataAccessRule;
 import it.geosolutions.geoserver.rest.decoder.RESTServiceAccessRule;
 import java.io.BufferedReader;
@@ -78,9 +79,8 @@ public class GSRESTEnhancedCASPublisher {
             throws IOException {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/servicesecurity/remove");
-        for (String rulePath : rulePathToRemove) {
-            urlToCall.append("&rulePath=");
-            urlToCall.append(rulePath);
+        for (String rulePath : Util.safeList(rulePathToRemove)) {
+            Util.appendParameter(urlToCall, "rulePath", rulePath);
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;
@@ -91,8 +91,7 @@ public class GSRESTEnhancedCASPublisher {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/datasecurity/remove");
         for (String rulePath : rulePathToRemove) {
-            urlToCall.append("&rulePath=");
-            urlToCall.append(rulePath);
+            Util.appendParameter(urlToCall, "rulePath", rulePath);
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;
@@ -104,25 +103,20 @@ public class GSRESTEnhancedCASPublisher {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/servicesecurity/save");
         for (RESTServiceAccessRule accessRule : accessRulesToSave) {
-            urlToCall.append("&service=");
-            urlToCall.append(accessRule.getService());
+            Util.appendParameter(urlToCall, "service", accessRule.getService());
 
-            urlToCall.append("?method=");
-            urlToCall.append(accessRule.getMethod());
+            Util.appendParameter(urlToCall, "method", accessRule.getMethod());
 
-            urlToCall.append("?override=");
-            urlToCall.append(override);
+            Util.appendParameter(urlToCall, "override", "" + override);
 
-            urlToCall.append("?previousRuleKey=");
-            urlToCall.append(accessRule.getRulePath());
+            Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
 
             StringBuilder roleStringBuilder = new StringBuilder();
             for (String role : accessRule.getRoles()) {
                 roleStringBuilder.append(role);
                 roleStringBuilder.append("%2c");//%2c == ,
             }
-            urlToCall.append("?roles=");
-            urlToCall.append(roleStringBuilder.toString());
+            Util.appendParameter(urlToCall, "roles", roleStringBuilder.toString());
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;
@@ -134,26 +128,22 @@ public class GSRESTEnhancedCASPublisher {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/datasecurity/save");
         for (RESTDataAccessRule accessRule : accessRulesToSave) {
-            urlToCall.append("?workspace=");
-            urlToCall.append(accessRule.getWorkspace());
-            urlToCall.append("&layer=");
-            urlToCall.append(accessRule.getLayer());
-            urlToCall.append("&accessMode=");
-            urlToCall.append(accessRule.getAccessMode());
-            urlToCall.append("&override=");
-            urlToCall.append(override);
-            urlToCall.append("&previousRuleKey=");
-            urlToCall.append(accessRule.getRulePath());
+            Util.appendParameter(urlToCall, "workspace", accessRule.getWorkspace());
+
+            Util.appendParameter(urlToCall, "layer", accessRule.getLayer());
+
+            Util.appendParameter(urlToCall, "accessMode", accessRule.getAccessMode());
+
+            Util.appendParameter(urlToCall, "override", "" + override);
+
+            Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
 
             StringBuilder roleStringBuilder = new StringBuilder();
             for (String role : accessRule.getRoles()) {
                 roleStringBuilder.append(role);
                 roleStringBuilder.append("%2c");//%2c == ,
             }
-
-            urlToCall.append("&roles=");
-            urlToCall.append(roleStringBuilder.toString());
-
+            Util.appendParameter(urlToCall, "roles", roleStringBuilder.toString());
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;
