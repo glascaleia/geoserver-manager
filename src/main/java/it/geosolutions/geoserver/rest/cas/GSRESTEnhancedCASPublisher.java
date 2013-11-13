@@ -90,7 +90,7 @@ public class GSRESTEnhancedCASPublisher {
             throws IOException {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/datasecurity/remove");
-        for (String rulePath : rulePathToRemove) {
+        for (String rulePath : Util.safeList(rulePathToRemove)) {
             Util.appendParameter(urlToCall, "rulePath", rulePath);
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
@@ -102,7 +102,7 @@ public class GSRESTEnhancedCASPublisher {
             throws IOException {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/servicesecurity/save");
-        for (RESTServiceAccessRule accessRule : accessRulesToSave) {
+        for (RESTServiceAccessRule accessRule : Util.safeList(accessRulesToSave)) {
             Util.appendParameter(urlToCall, "service", accessRule.getService());
 
             Util.appendParameter(urlToCall, "method", accessRule.getMethod());
@@ -112,7 +112,7 @@ public class GSRESTEnhancedCASPublisher {
             Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
 
             StringBuilder roleStringBuilder = new StringBuilder();
-            for (String role : accessRule.getRoles()) {
+            for (String role : Util.safeCollection(accessRule.getRoles())) {
                 roleStringBuilder.append(role);
                 roleStringBuilder.append("%2c");//%2c == ,
             }
@@ -127,7 +127,7 @@ public class GSRESTEnhancedCASPublisher {
             throws IOException {
         StringBuilder urlToCall = new StringBuilder(restURL);
         urlToCall.append("/rest/datasecurity/save");
-        for (RESTDataAccessRule accessRule : accessRulesToSave) {
+        for (RESTDataAccessRule accessRule : Util.safeList(accessRulesToSave)) {
             Util.appendParameter(urlToCall, "workspace", accessRule.getWorkspace());
 
             Util.appendParameter(urlToCall, "layer", accessRule.getLayer());
@@ -139,7 +139,7 @@ public class GSRESTEnhancedCASPublisher {
             Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
 
             StringBuilder roleStringBuilder = new StringBuilder();
-            for (String role : accessRule.getRoles()) {
+            for (String role : Util.safeCollection(accessRule.getRoles())) {
                 roleStringBuilder.append(role);
                 roleStringBuilder.append("%2c");//%2c == ,
             }
