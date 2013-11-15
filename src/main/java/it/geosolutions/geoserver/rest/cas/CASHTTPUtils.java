@@ -68,6 +68,12 @@ public class CASHTTPUtils {
     }
 
     public static String appendProxyTicketToURL(String url) {
+//        int index = url.indexOf("ticket=");
+//        if (index != -1) {
+//            LOGGER.warn("CASHTTPUtils has found ticket in the url: " + url);
+//            url = url.substring(0, index - 1);
+//            LOGGER.warn("new url without ticket is: " + url);
+//        }
         String proxyTicket = casAssertion.getPrincipal().getProxyTicketFor(url);
         if (proxyTicket == null || proxyTicket.isEmpty()) {
             throw new IllegalArgumentException("*********************** "

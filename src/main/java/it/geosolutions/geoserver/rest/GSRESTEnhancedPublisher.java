@@ -95,7 +95,7 @@ public class GSRESTEnhancedPublisher {
         credsProvider.setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
                 new UsernamePasswordCredentials(this.gsuser,
-                this.gspass));
+                        this.gspass));
         httpClient.setCredentialsProvider(credsProvider);
 //        TargetAuthenticationStrategy authenticationStrategy = new TargetAuthenticationStrategy() {
 //            @Override
@@ -151,7 +151,7 @@ public class GSRESTEnhancedPublisher {
         String urlToCall = this.restURL + "/rest/servicesecurity/remove";
         HttpPost post = new HttpPost(urlToCall);
         List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
-        for (String rulePath : rulePathToRemove) {
+        for (String rulePath : Util.safeList(rulePathToRemove)) {
             nameValuePairs.add(new BasicNameValuePair("rulePath",
                     rulePath));
         }
@@ -173,7 +173,7 @@ public class GSRESTEnhancedPublisher {
         String urlToCall = restURL + "/rest/datasecurity/remove";
         HttpPost post = new HttpPost(urlToCall);
         List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
-        for (String rulePath : rulePathToRemove) {
+        for (String rulePath : Util.safeList(rulePathToRemove)) {
             nameValuePairs.add(new BasicNameValuePair("rulePath",
                     rulePath));
         }
@@ -196,7 +196,7 @@ public class GSRESTEnhancedPublisher {
         String urlToCall = restURL + "/rest/servicesecurity/save";
         HttpPost post = new HttpPost(urlToCall);
         List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
-        for (RESTServiceAccessRule accessRule : accessRulesToSave) {
+        for (RESTServiceAccessRule accessRule : Util.safeList(accessRulesToSave)) {
             nameValuePairs.add(new BasicNameValuePair("service",
                     accessRule.getService()));
             nameValuePairs.add(new BasicNameValuePair("method",
@@ -205,13 +205,8 @@ public class GSRESTEnhancedPublisher {
                     "" + override));
             nameValuePairs.add(new BasicNameValuePair("previousRuleKey",
                     accessRule.getRulePath()));
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String role : accessRule.getRoles()) {
-                stringBuilder.append(role);
-                stringBuilder.append("%2c");//%2c == ,
-            }
-            nameValuePairs.add(new BasicNameValuePair("roles",
-                    stringBuilder.toString()));
+            String commaSeparatedRoles = Util.commaSeparatedRolesBuilder(accessRule.getRoles());
+            nameValuePairs.add(new BasicNameValuePair("roles", commaSeparatedRoles));
         }
         try {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -232,7 +227,7 @@ public class GSRESTEnhancedPublisher {
         String urlToCall = restURL + "/rest/datasecurity/save";
         HttpPost post = new HttpPost(urlToCall);
         List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
-        for (RESTDataAccessRule accessRule : accessRulesToSave) {
+        for (RESTDataAccessRule accessRule : Util.safeList(accessRulesToSave)) {
             nameValuePairs.add(new BasicNameValuePair("workspace",
                     accessRule.getWorkspace()));
             nameValuePairs.add(new BasicNameValuePair("layer",
@@ -243,13 +238,9 @@ public class GSRESTEnhancedPublisher {
                     "" + override));
             nameValuePairs.add(new BasicNameValuePair("previousRuleKey",
                     accessRule.getRulePath()));
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String role : accessRule.getRoles()) {
-                stringBuilder.append(role);
-                stringBuilder.append("%2c");//%2c == ,
-            }
+            String commaSeparatedRoles = Util.commaSeparatedRolesBuilder(accessRule.getRoles());
             nameValuePairs.add(new BasicNameValuePair("roles",
-                    stringBuilder.toString()));
+                    commaSeparatedRoles));
         }
         try {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs));

@@ -110,13 +110,8 @@ public class GSRESTEnhancedCASPublisher {
             Util.appendParameter(urlToCall, "override", "" + override);
 
             Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
-
-            StringBuilder roleStringBuilder = new StringBuilder();
-            for (String role : Util.safeCollection(accessRule.getRoles())) {
-                roleStringBuilder.append(role);
-                roleStringBuilder.append("%2c");//%2c == ,
-            }
-            Util.appendParameter(urlToCall, "roles", roleStringBuilder.toString());
+            String commaSeparatedRoles = Util.commaSeparatedRolesBuilder(accessRule.getRoles());
+            Util.appendParameter(urlToCall, "roles", commaSeparatedRoles);
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;
@@ -138,12 +133,9 @@ public class GSRESTEnhancedCASPublisher {
 
             Util.appendParameter(urlToCall, "previousRuleKey", accessRule.getRulePath());
 
-            StringBuilder roleStringBuilder = new StringBuilder();
-            for (String role : Util.safeCollection(accessRule.getRoles())) {
-                roleStringBuilder.append(role);
-                roleStringBuilder.append("%2c");//%2c == ,
-            }
-            Util.appendParameter(urlToCall, "roles", roleStringBuilder.toString());
+            String commaSeparatedRoles = Util.commaSeparatedRolesBuilder(accessRule.getRoles());
+
+            Util.appendParameter(urlToCall, "roles", commaSeparatedRoles);
         }
         String result = CASHTTPUtils.post(urlToCall.toString(), urlToCall.toString(), "text/xml", gsuser, gspass);
         return result != null;

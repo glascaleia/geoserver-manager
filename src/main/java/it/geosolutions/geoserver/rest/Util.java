@@ -28,8 +28,10 @@ import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -97,5 +99,17 @@ public class Util {
                     .append('=').append(parameterValue.trim());
         }
         return result;
+    }
+
+    public static String commaSeparatedRolesBuilder(Set<String> roles) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Iterator<String> iterator = roles.iterator();
+        while (iterator.hasNext()) {
+            stringBuilder.append(iterator.next());
+            if (iterator.hasNext()) {
+                stringBuilder.append("%2c");//%2c == ,
+            }
+        }
+        return stringBuilder.toString();
     }
 }
