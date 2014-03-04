@@ -309,5 +309,4 @@ public abstract class GeoserverRESTTest {
         return reader.getLayer(layername) != null;
     }
 
->>>>>>> afb6ba3... close #105. add getVersion capabilities
 }
