@@ -20,7 +20,7 @@
 
 	<groupId>it.geosolutions</groupId>
 	<artifactId>geoserver-manager</artifactId>
-	<version>1.6.x-enhanced</version>
+	<version>1.7.x-enhanced</version>
 
 	<packaging>jar</packaging>
 
