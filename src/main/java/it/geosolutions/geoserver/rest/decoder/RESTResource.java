@@ -1,7 +1,7 @@
 /*
  *  GeoServer-Manager - Simple Manager Library for GeoServer
  *  
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2014 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,6 +43,7 @@ import org.jdom.Namespace;
  * Parse a resource (FeatureType or Coverage) returned as XML REST objects.
  * 
  * @author etj
+ * @author Emanuele Tajariol <etj at geo-solutions.it>
  * @author Emmanuel Blondel - emmanuel.blondel1@gmail.com | emmanuel.blondel@fao.org
  * @author Henry Rotzoll
  * 
@@ -108,6 +109,10 @@ public class RESTResource {
         Element atom = store.getChild("link",
                 Namespace.getNamespace("atom", "http://www.w3.org/2005/Atom"));
         return atom.getAttributeValue("href");
+    }
+    
+    public String getNativeCRS() {
+    	return rootElem.getChildText("nativeCRS");
     }
     
         public RESTBoundingBox getNativeBoundingBox() {
