@@ -38,6 +38,10 @@ import java.util.Set;
  * @author ETj (etj at geo-solutions.it)
  */
 public class Util {
+    
+    public static final String QUIET_ON_NOT_FOUND_PARAM = "quietOnNotFound="; 
+    
+    public static final boolean DEFAULT_QUIET_ON_NOT_FOUND = true; 
 
     /**
      * Search for a stylename in global and in all workspaces.
@@ -59,6 +63,18 @@ public class Util {
         }
 
         return styles;
+    }
+    
+    /**
+     * Append the quietOnNotFound parameter to the input URL
+     * @param quietOnNotFound parameter
+     * @param url input url
+     * @return a composed url with the parameter appended
+     */
+    public static String appendQuietOnNotFound(boolean quietOnNotFound, String url) {
+        boolean contains = url.contains("?");
+        String composed = url + (contains ? "&":"?") + QUIET_ON_NOT_FOUND_PARAM + quietOnNotFound;
+        return composed;
     }
 
     public static <T> List<T> safeList(List<T> list) {
