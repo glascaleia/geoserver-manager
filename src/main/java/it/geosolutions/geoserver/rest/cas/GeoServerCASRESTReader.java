@@ -6,6 +6,7 @@ package it.geosolutions.geoserver.rest.cas;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.HTTPUtils;
+import it.geosolutions.geoserver.rest.Util;
 import it.geosolutions.geoserver.rest.cas.manager.GeoServerCASRESTStyleManager;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -87,6 +88,171 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
     @Override
     public boolean existGeoserver() {
         return CASHTTPUtils.httpPing(baseurl + "/rest/");
+    }
+
+    /**
+     * Checks if the selected DataStore is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the datastore
+     * @param dsName name of the datastore
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the datastore exists
+     */
+    @Override
+    public boolean existsDatastore(String workspace, String dsName, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/datastores/" + dsName + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected FeatureType is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the datastore
+     * @param dsName name of the datastore
+     * @param ftName name of the featuretype
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the featuretype exists
+     */
+    @Override
+    public boolean existsFeatureType(String workspace, String dsName, String ftName, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/datastores/" + dsName + "/featuretypes/" + ftName + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Coverage store is present. Parameter
+     * quietOnNotFound can be used for controlling the logging when 404 is
+     * returned.
+     *
+     * @param workspace workspace of the coveragestore
+     * @param csName name of the coveragestore
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the coveragestore exists
+     */
+    @Override
+    public boolean existsCoveragestore(String workspace, String csName, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/coveragestores/" + csName + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Coverage is present. Parameter quietOnNotFound can
+     * be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the coveragestore
+     * @param store name of the coveragestore
+     * @param name name of the coverage
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the coverage exists
+     */
+    @Override
+    public boolean existsCoverage(String workspace, String store, String name, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/coveragestores/" + store + "/coverages/" + name + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected LayerGroup is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the LayerGroup
+     * @param name name of the LayerGroup
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the LayerGroup exists
+     */
+    @Override
+    public boolean existsLayerGroup(String workspace, String name, boolean quietOnNotFound) {
+        String url;
+        if (workspace == null) {
+            url = baseurl + "/rest/layergroups/" + name + ".xml";
+        } else {
+            url = baseurl + "/rest/workspaces/" + workspace + "/layergroups/" + name + ".xml";
+        }
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Layer is present. Parameter quietOnNotFound can be
+     * used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the Layer
+     * @param name name of the Layer
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the Layer exists
+     */
+    @Override
+    public boolean existsLayer(String workspace, String name, boolean quietOnNotFound) {
+        String url;
+        if (workspace == null) {
+            url = baseurl + "/rest/layers/" + name + ".xml";
+        } else {
+            url = baseurl + "/rest/layers/" + workspace + ":" + name + ".xml";
+        }
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Namespace is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param prefix namespace prefix.
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the Namespace exists
+     */
+    @Override
+    public boolean existsNamespace(String prefix, boolean quietOnNotFound) {
+        if (prefix == null || prefix.isEmpty()) {
+            throw new IllegalArgumentException("Namespace prefix cannot be null or empty");
+        }
+        String url = baseurl + "/rest/namespaces/" + prefix + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Workspace is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param prefix Workspace prefix.
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the Workspace exists
+     */
+    @Override
+    public boolean existsWorkspace(String prefix, boolean quietOnNotFound) {
+        if (prefix == null || prefix.isEmpty()) {
+            throw new IllegalArgumentException("Workspace prefix cannot be null or empty");
+        }
+        String url = baseurl + "/rest/workspaces/" + prefix + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Granule is present. Parameter quietOnNotFound can
+     * be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the coveragestore
+     * @param coverageStore name of the coveragestore
+     * @param coverage name of the coverage
+     * @param id id of the granule
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the Granule exists
+     */
+    @Override
+    public boolean existsGranule(String workspace, String coverageStore, String coverage,
+            String id, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/coveragestores/" + coverageStore
+                + "/coverages/" + coverage + "/index/granules/" + id + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
     }
 
     public Assertion getCasAssertion() {

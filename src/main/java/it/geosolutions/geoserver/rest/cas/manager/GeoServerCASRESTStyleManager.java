@@ -26,6 +26,8 @@ package it.geosolutions.geoserver.rest.cas.manager;
 
 import it.geosolutions.geoserver.rest.manager.*;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import it.geosolutions.geoserver.rest.HTTPUtils;
+import it.geosolutions.geoserver.rest.Util;
 import it.geosolutions.geoserver.rest.cas.CASHTTPUtils;
 import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
@@ -58,17 +60,20 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
     }
 
     /**
-     * Check if a Style exists in the configured GeoServer instance.
+     * Check if a Style exists in the configured GeoServer instance. User can
+     * choose if log a possible exception or not
      *
      * @param name the name of the style to check for.
+     * @param quietOnNotFound if true, mute exception if false is returned
      * @return <TT>true</TT> on HTTP 200, <TT>false</TT> on HTTP 404
      * @throws RuntimeException if any other HTTP code than 200 or 404 was
      * retrieved.
      */
     @Override
-    public boolean existsStyle(String name) throws RuntimeException {
+    public boolean existsStyle(String name, boolean quietOnNotFound) {
         String url = buildXmlUrl(null, name);
-        return CASHTTPUtils.exists(url, gsuser, gspass);
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, gsuser, gspass);
     }
 
     /**
@@ -115,12 +120,13 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
     //=========================================================================
     /**
      *
-     * @since GeoServer 2.2
+     * @since GeoServer 2.6
      */
     @Override
-    public boolean existsStyle(String workspace, String name) {
+    public boolean existsStyle(String workspace, String name, boolean quietOnNotFound) {
         String url = buildXmlUrl(workspace, name);
-        return CASHTTPUtils.exists(url, gsuser, gspass);
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, gsuser, gspass);
     }
 
     /**
@@ -339,10 +345,9 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
             LOGGER.warn("Style name is going to be changed [" + styleName + "]");
         }
         styleName = styleName.replaceAll(":", "_");
-        
+
         // currently REST interface does't support URLencoded URL 
 //        styleName = URLEncoder.encode(styleName);
-
         String sUrl = buildUrl(null, styleName, null);
         if (purge) {
             sUrl += "?purge=true";
