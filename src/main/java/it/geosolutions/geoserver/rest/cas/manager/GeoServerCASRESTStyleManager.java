@@ -259,6 +259,17 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
         return result != null;
     }
 
+    /**
+     * Store and publish a Style, assigning it a name and choosing the raw
+     * format.
+     *
+     * @param sldFile the File containing the SLD document.
+     * @param name the Style name.
+     * @param raw the raw format
+     *
+     * @return <TT>true</TT> if the operation completed successfully.
+     */
+    @Override
     public boolean publishStyle(final File sldFile, final String name, final boolean raw) {
         /*
          * This is the equivalent call with cUrl:
@@ -269,7 +280,11 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
         String sUrl = buildPostUrl(null, name);
         sUrl += "&raw=" + raw;
         LOGGER.debug("POSTing new style " + name + " to " + sUrl);
-        String result = CASHTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
+        String contentType = GeoServerRESTPublisher.Format.SLD.getContentType();
+        if(!super.checkSLD10Version(sldFile)){
+            contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
+        }
+        String result = CASHTTPUtils.post(sUrl, sldFile, contentType, gsuser, gspass);
         return result != null;
     }
 

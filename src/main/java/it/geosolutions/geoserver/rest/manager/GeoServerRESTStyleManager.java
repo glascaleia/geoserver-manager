@@ -635,7 +635,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
         return sUrl.toString();
     }
 
-    private boolean checkSLD10Version(File fileSLD) {
+    protected boolean checkSLD10Version(File fileSLD) {
         boolean result = false;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
