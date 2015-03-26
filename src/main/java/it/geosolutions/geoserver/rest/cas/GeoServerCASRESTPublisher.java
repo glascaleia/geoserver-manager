@@ -356,6 +356,36 @@ public class GeoServerCASRESTPublisher {
         styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
         return styleManager.publishStyle(sldFile, name);
     }
+    
+    /**
+     * Store and publish a Style, assigning it a name and choosing the raw format.
+     *
+     * @param sldFile the File containing the SLD document.
+     * @param name the Style name.
+     * @param raw the raw format
+     *
+     * @return <TT>true</TT> if the operation completed successfully.
+     */
+    public boolean publishStyle(File sldFile, String name, boolean raw) {
+        styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
+        return styleManager.publishStyle(sldFile, name, raw);
+    }
+
+    /**
+     * Update a Style.
+     * 
+     * @param sldFile the File containing the SLD document.
+     * @param name the Style name.
+     * @param raw the raw format
+     * 
+     * @return <TT>true</TT> if the operation completed successfully.
+     * @throws IllegalArgumentException if the sldFile file or name are null or name is empty.
+     */
+    public boolean updateStyle(final File sldFile, final String name, boolean raw)
+            throws IllegalArgumentException {
+        styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
+        return styleManager.updateStyle(sldFile, name, raw);
+    }
 
     /**
      * Update a Style.
