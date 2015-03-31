@@ -2069,7 +2069,12 @@ public class GeoServerRESTPublisher {
      */
     public boolean removeDatastore(String workspace, String storename, final boolean recurse)
             throws IllegalArgumentException {
-        return removeStore(workspace, storename, StoreType.DATASTORES, recurse);
+        return removeStore(workspace, storename, StoreType.DATASTORES, recurse, Purge.NONE);
+    }
+
+    public boolean removeDatastore(String workspace, String storename, final boolean recurse, final Purge purge)
+            throws IllegalArgumentException {
+        return removeStore(workspace, storename, StoreType.DATASTORES, recurse, purge);
     }
 
     /**
@@ -2094,8 +2099,26 @@ public class GeoServerRESTPublisher {
      */
     public boolean removeCoverageStore(final String workspace, final String storename,
             final boolean recurse) throws IllegalArgumentException {
-        return removeStore(workspace, storename, StoreType.COVERAGESTORES, recurse);
+        return removeStore(workspace, storename, StoreType.COVERAGESTORES, recurse, Purge.NONE);
     }
+
+    /**
+     * Remove a given CoverageStore in a given Workspace.
+     *
+     * Note that purging may not work when deleting mosaics (https://jira.codehaus.org/browse/GEOT-4613).
+     *
+     * @param workspace The name of the workspace
+     * @param storename The name of the CoverageStore to remove.
+     * @param recurse if remove should be performed recursively
+     * @param purge the purge method
+     * @return <TT>true</TT> if the CoverageStore was successfully removed.
+     */
+    public boolean removeCoverageStore(final String workspace, final String storename,
+            final boolean recurse, final Purge purge) throws IllegalArgumentException {
+        return removeStore(workspace, storename, StoreType.COVERAGESTORES, recurse, purge);
+    }
+
+    public enum Purge {NONE, METADATA, ALL};
 
     /**
      * Remove a given Datastore in a given Workspace.
@@ -2104,11 +2127,12 @@ public class GeoServerRESTPublisher {
      * @param storename The name of the Datastore to remove.
      * @param the {@link StoreType} type
      * @param recurse if remove should be performed recursively
+     * @param purge the purge method
      * @throws IllegalArgumentException if workspace or storename are null or empty
      * @return <TT>true</TT> if the store was successfully removed.
      */
     private boolean removeStore(String workspace, String storename, StoreType type,
-            final boolean recurse) throws IllegalArgumentException {
+            final boolean recurse, final Purge purge) throws IllegalArgumentException {
         try {
             if (workspace == null || storename == null)
                 throw new IllegalArgumentException("Arguments may not be null!");
@@ -2118,8 +2142,10 @@ public class GeoServerRESTPublisher {
             final StringBuilder url = new StringBuilder(restURL);
             url.append("/rest/workspaces/").append(workspace).append("/").append(type).append("/")
                     .append(storename);
-            if (recurse)
-                url.append("?recurse=true");
+            url.append("?recurse=").append(recurse);
+            if(purge != null)
+                url.append("&purge=").append(purge);
+
             final URL deleteStore = new URL(url.toString());
 
             boolean deleted = HTTPUtils.delete(deleteStore.toExternalForm(), gsuser, gspass);
