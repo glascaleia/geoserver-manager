@@ -258,8 +258,41 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
         String result = CASHTTPUtils.post(sUrl, sldFile, GeoServerRESTPublisher.Format.SLD.getContentType(), gsuser, gspass);
         return result != null;
     }
-
+    
     /**
+     * Store and publish a Style, assigning it a name and choosing the raw
+     * format.
+     *
+     * @param sldBody the full SLD document as a String.
+     * @param name the Style name.
+     * @param raw the raw format
+     *
+     * @return <TT>true</TT> if the operation completed successfully.
+     */
+    @Override
+    public boolean publishStyle(final String sldBody, final String name, final boolean raw) {
+        /*
+         * This is the equivalent call with cUrl:
+         *
+         * {@code curl -u admin:geoserver -XPOST \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
+         * http://$GSIP:$GSPORT/$SERVLET/rest/styles?name=$name&raw=$raw}
+         */
+        if (sldBody == null || sldBody.isEmpty()) {
+            throw new IllegalArgumentException("The style body may not be null or empty");
+        }
+        
+        StringBuilder sUrl = new StringBuilder(buildPostUrl(null, name));
+        Util.appendParameter(sUrl, "raw", ""+raw);
+        String contentType = GeoServerRESTPublisher.Format.SLD.getContentType();
+        if(!super.checkSLD10Version(sldBody)){
+            contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
+        }
+        LOGGER.debug("POSTing new style " + name + " to " + sUrl + " using version: " + contentType);
+        String result = CASHTTPUtils.post(sUrl.toString(), sldBody, contentType, gsuser, gspass);
+        return result != null;
+    }
+
+     /**
      * Store and publish a Style, assigning it a name and choosing the raw
      * format.
      *
@@ -275,16 +308,16 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
          * This is the equivalent call with cUrl:
          *
          * {@code curl -u admin:geoserver -XPOST \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
-         * http://$GSIP:$GSPORT/$SERVLET/rest/styles?name=name&raw=raw}
+         * http://$GSIP:$GSPORT/$SERVLET/rest/styles?name=$name&raw=$raw}
          */
-        String sUrl = buildPostUrl(null, name);
-        sUrl += "&raw=" + raw;
-        LOGGER.debug("POSTing new style " + name + " to " + sUrl);
+        StringBuilder sUrl = new StringBuilder(buildPostUrl(null, name));
+        Util.appendParameter(sUrl, "raw", ""+raw);
         String contentType = GeoServerRESTPublisher.Format.SLD.getContentType();
         if(!super.checkSLD10Version(sldFile)){
             contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
         }
-        String result = CASHTTPUtils.post(sUrl, sldFile, contentType, gsuser, gspass);
+        LOGGER.debug("POSTing new style " + name + " to " + sUrl + " using version: " + contentType);
+        String result = CASHTTPUtils.post(sUrl.toString(), sldFile, contentType, gsuser, gspass);
         return result != null;
     }
     
@@ -313,14 +346,50 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
             throw new IllegalArgumentException("The style name may not be null or empty");
         }
         
-        String sUrl = buildUrl(null, name, null);
-        sUrl += "&raw=" + raw;
-        LOGGER.debug("POSTing new style " + name + " to " + sUrl);
+        StringBuilder sUrl = new StringBuilder(buildUrl(null, name, null));
+        Util.appendParameter(sUrl, "raw", ""+raw);
         String contentType = GeoServerRESTPublisher.Format.SLD.getContentType();
-        if(!this.checkSLD10Version(sldFile)){
+        if(!super.checkSLD10Version(sldFile)){
             contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
         }
-        String result = CASHTTPUtils.put(sUrl, sldFile, contentType, gsuser, gspass);
+        LOGGER.debug("PUTting style " + name + " to " + sUrl + " using version: " + contentType);
+        String result = CASHTTPUtils.put(sUrl.toString(), sldFile, contentType, gsuser, gspass);
+        return result != null;
+    }
+    
+    /**
+     * Update a Style.
+     * 
+     * @param sldBody the new SLD document as a String.
+     * @param name the Style name.
+     * @param raw the raw format
+     * 
+     * @return <TT>true</TT> if the operation completed successfully.
+     * @throws IllegalArgumentException if the style body or name are null or empty.
+     */
+    @Override
+    public boolean updateStyle(final String sldBody, final String name, final boolean raw) 
+            throws IllegalArgumentException {
+        /*
+         * This is the equivalent call with cUrl:
+         *
+         * {@code curl -u admin:geoserver -XPUT \ -H 'Content-type: application/vnd.ogc.sld+xml' \ -d @$FULLSLD \
+         * http://$GSIP:$GSPORT/$SERVLET/rest/styles?name=$name&raw=$raw}
+         */
+        if (sldBody == null || sldBody.isEmpty()) {
+            throw new IllegalArgumentException("The style body may not be null or empty");
+        } else if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("The style name may not be null or empty");
+        }
+        
+        StringBuilder sUrl = new StringBuilder(buildUrl(null, name, null));
+        Util.appendParameter(sUrl, "raw", ""+raw);
+        String contentType = GeoServerRESTPublisher.Format.SLD.getContentType();
+        if(!super.checkSLD10Version(sldBody)){
+            contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
+        }
+        LOGGER.debug("PUTting style " + name + " to " + sUrl + " using version: " + contentType);
+        String result = CASHTTPUtils.put(sUrl.toString(), sldBody, contentType, gsuser, gspass);
         return result != null;
     }
 
