@@ -91,6 +91,22 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
     }
 
     /**
+     * Checks if the selected Wms store is present. Parameter quietOnNotFound
+     * can be used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the wmsstore
+     * @param wsName name of the wmsstore
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the wmsstore exists
+     */
+    @Override
+    public boolean existsWmsstore(String workspace, String wsName, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/wmsstores/" + wsName + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
      * Checks if the selected DataStore is present. Parameter quietOnNotFound
      * can be used for controlling the logging when 404 is returned.
      *
@@ -136,6 +152,23 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
     @Override
     public boolean existsCoveragestore(String workspace, String csName, boolean quietOnNotFound) {
         String url = baseurl + "/rest/workspaces/" + workspace + "/coveragestores/" + csName + ".xml";
+        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
+        return CASHTTPUtils.exists(composed, username, password);
+    }
+
+    /**
+     * Checks if the selected Wms is present. Parameter quietOnNotFound can be
+     * used for controlling the logging when 404 is returned.
+     *
+     * @param workspace workspace of the wmsstore
+     * @param wsName name of the wmsstore
+     * @param name name of the wms
+     * @param quietOnNotFound if true, no exception is logged
+     * @return boolean indicating if the coverage exists
+     */
+    @Override
+    public boolean existsWms(String workspace, String store, String name, boolean quietOnNotFound) {
+        String url = baseurl + "/rest/workspaces/" + workspace + "/wmsstores/" + store + "/wmslayers/" + name + ".xml";
         String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
         return CASHTTPUtils.exists(composed, username, password);
     }
