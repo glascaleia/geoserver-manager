@@ -52,6 +52,8 @@ import it.geosolutions.geoserver.rest.decoder.RESTWorkspaceList;
 import it.geosolutions.geoserver.rest.decoder.about.GSVersionDecoder;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
+import it.geosolutions.geoserver.rest.sldservice.Method;
+import it.geosolutions.geoserver.rest.sldservice.Ramp;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -171,6 +173,42 @@ public class GeoServerRESTReader {
         LOGGER.info("Loading from REST path " + url);
         String response = HTTPUtils.get(url, username, password);
         return response;
+    }
+    
+    //naz
+    public String classifyVectorData(String vectorName, String attribute, Ramp ramp,
+            Integer intervals, Method method, Boolean open, Boolean reverse, Boolean normalize,
+            String startColor, String endColor, String midColor) {
+        if (attribute == null || attribute.isEmpty()) {
+            throw new IllegalArgumentException("Attribute may not be null");
+        }
+        if (ramp == null) {
+            throw new IllegalArgumentException("Ramp may not be null");
+        }
+        StringBuilder urlBuilder = new StringBuilder("/rest/sldservice/");
+        urlBuilder.append(vectorName).append("/classify.xml");
+        Util.appendParameter(urlBuilder, "attribute", attribute);
+        Util.appendParameter(urlBuilder, "ramp", ramp.name());
+        Util.appendParameter(urlBuilder, "intervals", intervals == null ? "2" : intervals.toString());
+        Util.appendParameter(urlBuilder, "method", method == null ? Method.equalInterval.name() : method.name());
+        Util.appendParameter(urlBuilder, "open", open == null ? "" + Boolean.FALSE : "" + open);
+        Util.appendParameter(urlBuilder, "reverse", reverse == null ? "" + Boolean.FALSE : "" + reverse);
+        Util.appendParameter(urlBuilder, "normalize", normalize == null ? "" + Boolean.FALSE : "" + normalize);
+
+        if(startColor != null && !startColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "startColor", startColor); 
+        }
+        if(endColor != null && !endColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "endColor", endColor); 
+        }
+        if(midColor != null && !midColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "midColor", midColor); 
+        }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("### Classifying Vector Data from " + urlBuilder.toString());
+        }
+        return load(urlBuilder.toString());
     }
 
     /**

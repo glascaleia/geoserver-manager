@@ -83,7 +83,7 @@ public class GSRESTEnhancedReader {
         credsProvider.setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
                 new UsernamePasswordCredentials(this.gsuser,
-                this.gspass));
+                        this.gspass));
         httpClient.setCredentialsProvider(credsProvider);
     }
 
@@ -129,23 +129,6 @@ public class GSRESTEnhancedReader {
      * @throws GeoPlatformException
      */
     public String loadGSServiceMethods(String serviceName) {
-//        HttpPost post = new HttpPost(urlToCall);
-//        List<NameValuePair> nameValuePairs = Lists.<NameValuePair>newArrayList();
-//        nameValuePairs.add(new BasicNameValuePair("serviceName",
-//                serviceName));
-//        try {
-//            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-//            HttpResponse response = httpClient.execute(post, this.localContext);
-//
-//            System.out.println("Response: " + response);
-//            
-//            jsonToParse = this.generateStringFromResponse(response);
-//
-////            this.manageHttpResponse(response);
-//        } catch (IOException e) {
-//            logger.error("Error on loading service methods: " + e.getMessage());
-//            throw new GeoPlatformException("Load GS Service Methods Error: " + e);
-//        }
         String urlToCall = this.restURL + "/rest/services/load/methods?serviceName=" + serviceName.trim();
         String jsonToParse = null;
         jsonToParse = HTTPUtils.get(urlToCall, this.gsuser, this.gspass);
