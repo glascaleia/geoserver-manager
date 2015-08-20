@@ -54,6 +54,7 @@ import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverag
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
 import it.geosolutions.geoserver.rest.sldservice.Method;
 import it.geosolutions.geoserver.rest.sldservice.Ramp;
+import it.geosolutions.geoserver.rest.sldservice.Type;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -179,6 +180,9 @@ public class GeoServerRESTReader {
     public String classifyVectorData(String vectorName, String attribute, Ramp ramp,
             Integer intervals, Method method, Boolean open, Boolean reverse, Boolean normalize,
             String startColor, String endColor, String midColor) {
+        if (vectorName == null || vectorName.isEmpty()) {
+            throw new IllegalArgumentException("The vector name may not be null");
+        }
         if (attribute == null || attribute.isEmpty()) {
             throw new IllegalArgumentException("Attribute may not be null");
         }
@@ -207,6 +211,38 @@ public class GeoServerRESTReader {
         
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Classifying Vector Data from " + urlBuilder.toString());
+        }
+        return load(urlBuilder.toString());
+    }
+    
+    //naz
+    public String rasterizeData(String rasterName, Ramp ramp,
+            Double min, Double max, Integer classes, Integer digits,
+            Type type, String startColor, String endColor, String midColor) {
+        if (rasterName == null) {
+            throw new IllegalArgumentException("The raster name may not be null");
+        }
+        StringBuilder urlBuilder = new StringBuilder("/rest/sldservice/");
+        urlBuilder.append(rasterName).append("/rasterize.sld");
+        Util.appendParameter(urlBuilder, "min", min == null ? "0.0" : min.toString());
+        Util.appendParameter(urlBuilder, "max", max == null ? "100.0" : max.toString());
+        Util.appendParameter(urlBuilder, "classes", classes == null ? "100" : classes.toString());
+        Util.appendParameter(urlBuilder, "digits", digits == null ? "5" : digits.toString());   
+        Util.appendParameter(urlBuilder, "type", type == null ? Type.RAMP.name() : type.name());
+        Util.appendParameter(urlBuilder, "ramp", ramp == null ? Ramp.red.name() : ramp.name());
+        
+        if(startColor != null && !startColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "startColor", startColor); 
+        }
+        if(endColor != null && !endColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "endColor", endColor); 
+        }
+        if(midColor != null && !midColor.isEmpty()){
+            Util.appendParameter(urlBuilder, "midColor", midColor); 
+        }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("### Rasterize Data from " + urlBuilder.toString());
         }
         return load(urlBuilder.toString());
     }

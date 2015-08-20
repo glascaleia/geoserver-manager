@@ -26,6 +26,7 @@ package it.geosolutions.geoserver.sldservice;
 
 import it.geosolutions.geoserver.rest.*;
 import it.geosolutions.geoserver.rest.sldservice.Ramp;
+import it.geosolutions.geoserver.rest.sldservice.Type;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.slf4j.Logger;
@@ -40,21 +41,32 @@ public class GeoserverRESTSLDServiceTest extends GeoserverRESTTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(GeoserverRESTTest.class);
     
     /**
-     * Test of getLayers method, of class GeoServerRESTReader.
+     * Test of classifyVectorData method, of class GeoServerRESTReader.
      */
     @Test
     public void testClassifyVectorData() {
-        
         LOGGER.info("--- Testing classify vector data ---");
-        
         if (!enabled()) {
             return;
         }
-
         String result = reader.classifyVectorData("states", "LAND_KM", Ramp.red, 
                 null, null, null, null, null, null, null, null);
-
         LOGGER.info("Result of test classify vector data: " + result);
+        assertNotNull(result);
+    }
+
+    /**
+     * Test of rasterizeData method, of class GeoServerRESTReader.
+     */
+    @Test
+    public void testRasterizeData() {
+        LOGGER.info("--- Testing rasterize data ---");
+        if (!enabled()) {
+            return;
+        }
+        String result = reader.rasterizeData("sfdem", Ramp.custom, 0d, 100d,
+                5, 1, Type.RAMP, "0xFF0000", "0x0000FF", null);
+        LOGGER.info("Result of test rasterize data: " + result);
         assertNotNull(result);
     }
 
