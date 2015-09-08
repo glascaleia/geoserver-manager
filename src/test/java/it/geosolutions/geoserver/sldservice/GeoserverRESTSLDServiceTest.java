@@ -50,7 +50,7 @@ public class GeoserverRESTSLDServiceTest extends GeoserverRESTTest {
             return;
         }
         String result = reader.classifyVectorData("states", "LAND_KM", Ramp.red, 
-                null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null);
         LOGGER.info("Result of test classify vector data: " + result);
         assertNotNull(result);
     }
