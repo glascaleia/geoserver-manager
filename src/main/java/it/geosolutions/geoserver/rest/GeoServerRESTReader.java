@@ -179,7 +179,7 @@ public class GeoServerRESTReader {
     //naz
     public String classifyVectorData(String vectorName, String attribute, Ramp ramp,
             Integer intervals, Method method, Boolean open, Boolean reverse, Boolean normalize,
-            String startColor, String endColor, String midColor) {
+            String startColor, String endColor, String midColor, Boolean size, String symbol) {
         if (vectorName == null || vectorName.isEmpty()) {
             throw new IllegalArgumentException("The vector name may not be null");
         }
@@ -207,6 +207,10 @@ public class GeoServerRESTReader {
         }
         if(midColor != null && !midColor.isEmpty()){
             Util.appendParameter(urlBuilder, "midColor", midColor); 
+        }
+        Util.appendParameter(urlBuilder, "size", size == null ? "" + Boolean.FALSE : "" + size);
+        if(symbol != null && !symbol.isEmpty()){
+            Util.appendParameter(urlBuilder, "symbol", symbol); 
         }
         
         if (LOGGER.isDebugEnabled()) {
