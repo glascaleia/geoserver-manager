@@ -1,3 +1,5 @@
+/.idea
+/geoserver-manager.iml
 ##
 ## This file has been automatically generated with the command line:
 ## for pom in $(find -name "pom.xml") ; do path=${pom%*pom.xml} ; echo '#' $path ; echo ; echo ${path}target ; echo ; done > .gitignore
