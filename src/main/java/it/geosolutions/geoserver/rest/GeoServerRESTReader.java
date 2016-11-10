@@ -218,7 +218,27 @@ public class GeoServerRESTReader {
         }
         return load(urlBuilder.toString());
     }
-    
+
+
+
+    public String uniqueValues(String vectorName, String attribute) {
+        if (vectorName == null || vectorName.isEmpty()) {
+            throw new IllegalArgumentException("The vector name may not be null");
+        }
+        if (attribute == null || attribute.isEmpty()) {
+            throw new IllegalArgumentException("Attribute may not be null");
+        }
+
+        StringBuilder urlBuilder = new StringBuilder("/rest/uniqueValue/");
+        urlBuilder.append(vectorName).append("/").append(attribute).append("/classify.json");
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("### Unique Values: " + urlBuilder.toString());
+        }
+        return load(urlBuilder.toString());
+    }
+
+
     //naz
     public String rasterizeData(String rasterName, Ramp ramp,
             Double min, Double max, Integer classes, Integer digits,
