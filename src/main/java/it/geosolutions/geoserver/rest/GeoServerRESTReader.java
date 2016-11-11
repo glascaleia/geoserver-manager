@@ -24,31 +24,7 @@
  */
 package it.geosolutions.geoserver.rest;
 
-import it.geosolutions.geoserver.rest.decoder.RESTCoverage;
-import it.geosolutions.geoserver.rest.decoder.RESTCoverageList;
-import it.geosolutions.geoserver.rest.decoder.RESTCoverageStore;
-import it.geosolutions.geoserver.rest.decoder.RESTCoverageStoreList;
-import it.geosolutions.geoserver.rest.decoder.RESTDataStore;
-import it.geosolutions.geoserver.rest.decoder.RESTDataStoreList;
-import it.geosolutions.geoserver.rest.decoder.RESTFeatureType;
-import it.geosolutions.geoserver.rest.decoder.RESTFeatureTypeList;
-import it.geosolutions.geoserver.rest.decoder.RESTLayer;
-import it.geosolutions.geoserver.rest.decoder.RESTLayer21;
-import it.geosolutions.geoserver.rest.decoder.RESTLayerGroup;
-import it.geosolutions.geoserver.rest.decoder.RESTLayerGroupList;
-import it.geosolutions.geoserver.rest.decoder.RESTLayerList;
-import it.geosolutions.geoserver.rest.decoder.RESTNamespace;
-import it.geosolutions.geoserver.rest.decoder.RESTNamespaceList;
-import it.geosolutions.geoserver.rest.decoder.RESTResource;
-import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageGranulesList;
-import it.geosolutions.geoserver.rest.decoder.RESTStructuredCoverageIndexSchema;
-import it.geosolutions.geoserver.rest.decoder.RESTStyle;
-import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
-import it.geosolutions.geoserver.rest.decoder.RESTWms;
-import it.geosolutions.geoserver.rest.decoder.RESTWmsList;
-import it.geosolutions.geoserver.rest.decoder.RESTWmsStore;
-import it.geosolutions.geoserver.rest.decoder.RESTWmsStoreList;
-import it.geosolutions.geoserver.rest.decoder.RESTWorkspaceList;
+import it.geosolutions.geoserver.rest.decoder.*;
 import it.geosolutions.geoserver.rest.decoder.about.GSVersionDecoder;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStructuredGridCoverageReaderManager;
 import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
@@ -221,7 +197,7 @@ public class GeoServerRESTReader {
 
 
 
-    public String uniqueValues(String vectorName, String attribute) {
+    public RESTServiceUniqueValues uniqueValues(String vectorName, String attribute) {
         if (vectorName == null || vectorName.isEmpty()) {
             throw new IllegalArgumentException("The vector name may not be null");
         }
@@ -230,12 +206,12 @@ public class GeoServerRESTReader {
         }
 
         StringBuilder urlBuilder = new StringBuilder("/rest/uniqueValue/");
-        urlBuilder.append(vectorName).append("/").append(attribute).append("/classify.json");
+        urlBuilder.append(vectorName).append("/").append(attribute).append("/classify.xml");
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("### Unique Values: " + urlBuilder.toString());
         }
-        return load(urlBuilder.toString());
+        return RESTServiceUniqueValues.build(load(urlBuilder.toString()));
     }
 
 

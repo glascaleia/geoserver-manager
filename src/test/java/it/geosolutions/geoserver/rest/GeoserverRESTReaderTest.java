@@ -25,11 +25,7 @@
 
 package it.geosolutions.geoserver.rest;
 
-import it.geosolutions.geoserver.rest.decoder.RESTDataStore;
-import it.geosolutions.geoserver.rest.decoder.RESTDataStoreList;
-import it.geosolutions.geoserver.rest.decoder.RESTLayerList;
-import it.geosolutions.geoserver.rest.decoder.RESTNamespaceList;
-import it.geosolutions.geoserver.rest.decoder.RESTWorkspaceList;
+import it.geosolutions.geoserver.rest.decoder.*;
 import it.geosolutions.geoserver.rest.decoder.utils.NameLinkElem;
 
 import java.util.List;
@@ -98,6 +94,24 @@ public class GeoserverRESTReaderTest extends GeoserverRESTTest {
 		}
         System.out.println();
         System.out.println("Datastores:" + dsnum); // value in default gs installation
+//        assertEquals(4, dsnum); // value in default gs installation
+
+	}
+
+	@Test
+	public void testGetUniqueValues() {
+//		if(!enabled()) return;
+		reader.baseurl = "http://localhost:8989/geoserver";
+		reader.username = "admin";
+		reader.password = "geoserver";
+
+		RESTServiceUniqueValues uniqueValues = reader.uniqueValues("states","STATE_ABBR");
+
+		System.out.println();
+		System.out.println("UniqueValues:" + uniqueValues.getNames()); // value in default gs installation
+
+
+
 //        assertEquals(4, dsnum); // value in default gs installation
 
 	}
