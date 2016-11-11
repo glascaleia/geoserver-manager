@@ -45,10 +45,11 @@ import java.util.List;
 import java.util.Set;
 
 
-public class RESTServiceUniqueValues extends RESTAbstractList<UniqueValueName> {
+public class RESTServiceUniqueValues extends RESTUniqueValueList<UniqueValueName> {
 
     public static RESTServiceUniqueValues build(String response) {
         Element elem = JDOMBuilder.buildElement(response);
+
         return elem == null? null : new RESTServiceUniqueValues(elem.getChild("uniqueValueList"));
     }
 
