@@ -25,17 +25,15 @@
 package it.geosolutions.geoserver.rest.manager;
 
 import it.geosolutions.geoserver.rest.HTTPUtils;
+import net.sf.json.JSON;
+import net.sf.json.JSONObject;
+import org.restlet.data.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
-import org.restlet.data.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Alessio Fabiani, GeoSolutions S.A.S.
@@ -223,7 +221,11 @@ public class GeoServerRESTImporterManager extends GeoServerRESTAbstractManager {
      * @throws Exception
      */
     public void postImport(int imp) throws Exception {
-        HTTPUtils.post(buildUrl()+"/" + imp + "?exec=true", "", "text/plain", gsuser, gspass);
+        try {
+            HTTPUtils.post(buildUrl() + "/" + imp + "?exec=true", "", "text/plain", gsuser, gspass);
+        }catch (NullPointerException ex){
+            LOGGER.error(ex.getMessage());
+        }
     }
 
     /**
