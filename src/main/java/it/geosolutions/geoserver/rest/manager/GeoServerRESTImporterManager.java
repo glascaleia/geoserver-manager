@@ -227,7 +227,7 @@ public class GeoServerRESTImporterManager extends GeoServerRESTAbstractManager {
      */
     public void postImport(int imp) throws Exception {
         try {
-            HTTPUtils.post(buildUrl() + "/" + imp + "?exec=true", "", "text/plain", gsuser, gspass);
+            HTTPUtils.post(buildUrl() + "/" + imp + "?exec=true&async=true", "", "text/plain", gsuser, gspass);
         }catch (NullPointerException ex){
             LOGGER.error(ex.getMessage());
         }
