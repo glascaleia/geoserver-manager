@@ -389,6 +389,21 @@ public class GeoServerCASRESTPublisher {
 
     /**
      * Update a Style.
+     *
+     * @param sldBody the new SLD document as a String.
+     * @param name the Style name.
+     * @param raw the raw format
+     *
+     * @return <TT>true</TT> if the operation completed successfully.
+     * @throws IllegalArgumentException if the style body or name are null or empty.
+     */
+    public boolean updateStyle(final String sldBody, final String name, Boolean raw)
+            throws IllegalArgumentException {
+        return styleManager.updateStyle(sldBody, name, raw);
+    }
+
+    /**
+     * Update a Style.
      * 
      * @param sldBody the new SLD document as a String.
      * @param name the Style name to update.
