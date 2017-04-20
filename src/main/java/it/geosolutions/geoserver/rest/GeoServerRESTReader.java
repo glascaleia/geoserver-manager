@@ -301,7 +301,7 @@ public class GeoServerRESTReader {
      * @return <TT>true</TT> on HTTP 200, <TT>false</TT> on HTTP 404
      * @throws RuntimeException if any other HTTP code than 200 or 404 was retrieved.
      */
-    public boolean existsStyle(String styleName, boolean quietOnNotFound) throws RuntimeException {
+    public boolean existsStyle(String styleName, Boolean quietOnNotFound) throws RuntimeException {
         return styleManager.existsStyle(styleName, quietOnNotFound);
     }
 

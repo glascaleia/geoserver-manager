@@ -24,19 +24,19 @@
  */
 package it.geosolutions.geoserver.rest.cas.manager;
 
-import it.geosolutions.geoserver.rest.manager.*;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.HTTPUtils;
 import it.geosolutions.geoserver.rest.Util;
 import it.geosolutions.geoserver.rest.cas.CASHTTPUtils;
 import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
-import java.io.File;
-import java.net.URL;
-import java.net.URLEncoder;
+import it.geosolutions.geoserver.rest.manager.GeoServerRESTStyleManager;
 import org.jasig.cas.client.validation.Assertion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.URL;
+import java.net.URLEncoder;
 
 /**
  *
@@ -70,7 +70,7 @@ public class GeoServerCASRESTStyleManager extends GeoServerRESTStyleManager {
      * retrieved.
      */
     @Override
-    public boolean existsStyle(String name, boolean quietOnNotFound) {
+    public boolean existsStyle(String name, Boolean quietOnNotFound) {
         String url = buildXmlUrl(null, name);
         String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
         return CASHTTPUtils.exists(composed, gsuser, gspass);

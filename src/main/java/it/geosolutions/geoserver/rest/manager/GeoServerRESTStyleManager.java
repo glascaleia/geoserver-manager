@@ -29,6 +29,15 @@ import it.geosolutions.geoserver.rest.HTTPUtils;
 import it.geosolutions.geoserver.rest.Util;
 import it.geosolutions.geoserver.rest.decoder.RESTStyle;
 import it.geosolutions.geoserver.rest.decoder.RESTStyleList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,18 +45,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -86,7 +83,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> on HTTP 200, <TT>false</TT> on HTTP 404
      * @throws RuntimeException if any other HTTP code than 200 or 404 was retrieved.
      */
-   public boolean existsStyle(String name, boolean quietOnNotFound) {
+   public boolean existsStyle(String name, Boolean quietOnNotFound) {
        String url = buildXmlUrl(null, name);
        String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
        return HTTPUtils.exists(composed , gsuser, gspass);
