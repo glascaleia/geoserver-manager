@@ -381,7 +381,7 @@ public class GeoServerCASRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      * @throws IllegalArgumentException if the sldFile file or name are null or name is empty.
      */
-    public boolean updateStyle(final File sldFile, final String name, boolean raw)
+    public boolean updateStyle(final File sldFile, final String name, Boolean raw)
             throws IllegalArgumentException {
         styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
         return styleManager.updateStyle(sldFile, name, raw);

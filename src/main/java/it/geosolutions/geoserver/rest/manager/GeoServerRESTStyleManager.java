@@ -376,7 +376,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      * @return <TT>true</TT> if the operation completed successfully.
      * @throws IllegalArgumentException if the style body or name are null or empty.
      */
-    public boolean updateStyle(final String sldBody, final String name, final boolean raw) 
+    public boolean updateStyle(final String sldBody, final String name, final Boolean raw)
             throws IllegalArgumentException {
         /*
          * This is the equivalent call with cUrl:

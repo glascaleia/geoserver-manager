@@ -370,7 +370,7 @@ public class GeoServerRESTPublisher {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
-    public boolean publishStyle(String sldBody, String name, boolean raw) {
+    public boolean publishStyle(String sldBody, String name, Boolean raw) {
         return styleManager.publishStyle(sldBody, name, raw);
     }
     
@@ -383,7 +383,7 @@ public class GeoServerRESTPublisher {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
-    public boolean publishStyle(File sldFile, String name, boolean raw) {
+    public boolean publishStyle(File sldFile, String name, Boolean raw) {
         return styleManager.publishStyle(sldFile, name, raw);
     }
 
@@ -412,7 +412,7 @@ public class GeoServerRESTPublisher {
      * @return <TT>true</TT> if the operation completed successfully.
      * @throws IllegalArgumentException if the style body or name are null or empty.
      */
-    public boolean updateStyle(final String sldBody, final String name, boolean raw)
+    public boolean updateStyle(final String sldBody, final String name, Boolean raw)
             throws IllegalArgumentException {
         return styleManager.updateStyle(sldBody, name, raw);
     }
