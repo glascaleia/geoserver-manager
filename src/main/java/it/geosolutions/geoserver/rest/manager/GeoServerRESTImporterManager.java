@@ -65,6 +65,11 @@ public class GeoServerRESTImporterManager extends GeoServerRESTAbstractManager {
         return ((JSONObject)json).getJSONObject("import");
     }
 
+    public JSONObject getLayer(int imp, int task) throws Exception{
+        JSON json = HTTPUtils.getAsJSON(String.format(buildUrl()+"/%d/tasks/%d/layer", imp, task), gsuser , gspass);
+        return ((JSONObject)json).getJSONObject("layer");
+    }
+
     /**
      * Retrieves the Import Task JSON Object given its identifier and task number
      *
@@ -222,7 +227,7 @@ public class GeoServerRESTImporterManager extends GeoServerRESTAbstractManager {
      */
     public void postImport(int imp) throws Exception {
         try {
-            HTTPUtils.post(buildUrl() + "/" + imp + "?exec=true", "", "text/plain", gsuser, gspass);
+            HTTPUtils.post(buildUrl() + "/" + imp + "?exec=true&async=true", "", "text/plain", gsuser, gspass);
         }catch (NullPointerException ex){
             LOGGER.error(ex.getMessage());
         }
