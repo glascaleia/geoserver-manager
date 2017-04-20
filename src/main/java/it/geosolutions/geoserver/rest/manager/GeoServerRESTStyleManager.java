@@ -281,7 +281,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
-    public boolean publishStyle(final String sldBody, final String name, final boolean raw) {
+    public boolean publishStyle(final String sldBody, final String name, final Boolean raw) {
         /*
          * This is the equivalent call with cUrl:
          *
@@ -313,7 +313,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
-    public boolean publishStyle(final File sldFile, final String name, final boolean raw) {
+    public boolean publishStyle(final File sldFile, final String name, final Boolean raw) {
         /*
          * This is the equivalent call with cUrl:
          *

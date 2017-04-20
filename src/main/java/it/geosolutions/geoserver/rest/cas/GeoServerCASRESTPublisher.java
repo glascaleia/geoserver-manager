@@ -333,6 +333,20 @@ public class GeoServerCASRESTPublisher {
     }
 
     /**
+     * Store and publish a Style, assigning it a name and choosing the raw format.
+     *
+     * @param sldBody the full SLD document as a String.
+     * @param name the Style name.
+     * @param raw the raw format
+     *
+     * @return <TT>true</TT> if the operation completed successfully.
+     */
+    public boolean publishStyle(String sldBody, String name, Boolean raw) {
+        styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
+        return styleManager.publishStyle(sldBody, name, raw);
+    }
+
+    /**
      * Store and publish a Style.
      * 
      * @param sldFile the File containing the SLD document.
@@ -366,7 +380,7 @@ public class GeoServerCASRESTPublisher {
      *
      * @return <TT>true</TT> if the operation completed successfully.
      */
-    public boolean publishStyle(File sldFile, String name, boolean raw) {
+    public boolean publishStyle(File sldFile, String name, Boolean raw) {
         styleManager.setCasAssertion(CASHTTPUtils.getCasAssertion());
         return styleManager.publishStyle(sldFile, name, raw);
     }
