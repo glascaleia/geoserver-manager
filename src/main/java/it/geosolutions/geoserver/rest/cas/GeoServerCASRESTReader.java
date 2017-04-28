@@ -116,7 +116,7 @@ public class GeoServerCASRESTReader extends GeoServerRESTReader {
      * @return boolean indicating if the datastore exists
      */
     @Override
-    public boolean existsDatastore(String workspace, String dsName, boolean quietOnNotFound) {
+    public boolean existsDatastore(String workspace, String dsName, Boolean quietOnNotFound) {
         String url = baseurl + "/rest/workspaces/" + workspace + "/datastores/" + dsName + ".xml";
         String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
         return CASHTTPUtils.exists(composed, username, password);

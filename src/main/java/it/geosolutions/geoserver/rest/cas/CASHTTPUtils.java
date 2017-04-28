@@ -25,31 +25,20 @@
 package it.geosolutions.geoserver.rest.cas;
 
 import it.geosolutions.geoserver.rest.Util;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.FileRequestEntity;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.io.IOUtils;
 import org.jasig.cas.client.validation.Assertion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 
 /**
  * Low level HTTP utilities.
@@ -84,7 +73,8 @@ public class CASHTTPUtils {
             url += parameterSeparator + "ticket=" + URLEncoder.
                     encode(proxyTicket, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            LOGGER.error("Error on encoding proxy ticket", ex);
+            ex.printStackTrace();
+            throw new IllegalStateException(ex.getMessage());
         }
         return url;
     }

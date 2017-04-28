@@ -433,7 +433,7 @@ public class GeoServerRESTReader {
      * @param quietOnNotFound if true, no exception is logged
      * @return boolean indicating if the datastore exists
      */
-    public boolean existsDatastore(String workspace, String dsName, boolean quietOnNotFound){
+    public boolean existsDatastore(String workspace, String dsName, Boolean quietOnNotFound){
         String url = baseurl + "/rest/workspaces/" + workspace + "/datastores/" + dsName + ".xml";
         String composed = Util.appendQuietOnNotFound(quietOnNotFound, url);
         return HTTPUtils.exists(composed, username, password);

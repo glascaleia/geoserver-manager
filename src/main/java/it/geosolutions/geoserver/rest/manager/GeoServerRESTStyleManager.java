@@ -396,7 +396,7 @@ public class GeoServerRESTStyleManager extends GeoServerRESTAbstractManager {
         if(!this.checkSLD10Version(sldBody)){
             contentType = GeoServerRESTPublisher.Format.SLD_1_1_0.getContentType();
         }
-        LOGGER.debug("PUTting style " + name + " to " + sUrl + " using version: " + contentType);
+        LOGGER.info("PUTting style " + name + " to " + sUrl + " using version: " + contentType);
         String result = HTTPUtils.put(sUrl.toString(), sldBody, contentType, gsuser, gspass);
         return result != null;
     }
