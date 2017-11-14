@@ -73,45 +73,20 @@
 		</license>
 	</licenses>
 
-	<url>http://code.google.com/p/geoserver-manager/</url>
-
-	<issueManagement>
-		<system>googlecode</system>
-		<url>http://code.google.com/p/geoserver-manager/issues/list</url>
-	</issueManagement>
-
-	<mailingLists>
-		<mailingList>
-			<name>GeoServer Manager User List</name>
-			<post>geoserver-manager-users@googlegroups.com </post>
-			<archive>http://groups.google.com/group/geoserver-manager-users/topics</archive>
-		</mailingList>
-	</mailingLists>
 
 	<scm>
-		<connection>scm:git:[fetch=]https://github.com/geosolutions-it/geoserver-manager.git[push=]git@github.com:geosolutions-it/geoserver-manager.git</connection>
-		<!--developerConnection>scm:git</developerConnection -->
-		<!--tag>master</tag -->
-		<url>https://github.com/geosolutions-it/geoserver-manager</url>
+		<connection>scm:git:git@github.com:glascaleia/geoserver-manager.git</connection>
+        <url>scm:git:git@github.com:glascaleia/geoserver-manager.git</url>
+        <developerConnection>scm:git:git@github.com:glascaleia/geoserver-manager.git</developerConnection>
 	</scm>
 
-	<ciManagement>
-		<system>jenkins</system>
-		<url>http://ci.geo-solutions.it/</url>
-	</ciManagement>
 
-	<distributionManagement>
-		<downloadUrl>http://maven.geo-solutions.it</downloadUrl>
-		<repository>
-			<uniqueVersion>false</uniqueVersion>
-			<id>geosolutions</id>
-			<url>ftp://maven.geo-solutions.it/</url>
-		</repository>
-		<site>
-			<id>demo.geosolutions</id>
-			<url>scp://demo.geo-solutions.it/var/www/share/github/gsman</url>
-		</site>
-	</distributionManagement>
+<distributionManagement>
+    <repository>
+        <id>geosdi-realese</id>
+        <url>http://repo.geosdi.org/artifactory/libs-release-local</url>
+    </repository>
+</distributionManagement>
 
 
 	<build>
@@ -157,14 +132,16 @@
 				</executions>
 			</plugin>
 			<!-- versioning -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.2.2</version>
-				<configuration>
-					<tagNameFormat>v@{project.version}</tagNameFormat>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>release</releaseProfiles>
+                </configuration>
+            </plugin>
 		</plugins>
 
 		<!-- ======================================================== -->
