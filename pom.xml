@@ -92,26 +92,6 @@
 
 	<build>
 		<plugins>
-			
-			<!-- ======================================================= -->
-			<!-- Source packaging. -->
-			<!-- ======================================================= -->
-			<plugin>
-				<inherited>true</inherited>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<configuration>
-					<attach>true</attach>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<!-- versioning -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
