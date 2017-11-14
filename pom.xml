@@ -20,7 +20,7 @@
     
     <groupId>it.geosolutions</groupId>
     <artifactId>geoserver-manager</artifactId>
-    <version>1.7.x-enhanced-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
     
     <packaging>jar</packaging>
     
@@ -225,101 +225,3 @@
     </profiles>
 </project>
 
-            <version>4.4.6</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>15.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-            <version>1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <version>2.4</version>
-            <classifier>jdk15</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.servicemix.bundles</groupId>
-            <artifactId>org.apache.servicemix.bundles.restlet</artifactId>
-            <version>1.1.10_3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <!-- commons-logging can be rather simply and conveniently excluded as
-            a dependency by declaring it in the provided scope within the pom.xml file
-            of your project. The actual commons-logging classes would be provided by
-            jcl-over-slf4j. This translates into the following pom file snippet: -->
-        <!-- <dependency> <groupId>commons-logging</groupId> <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version> <scope>provided</scope> </dependency> <dependency>
-            <groupId>log4j</groupId> <artifactId>log4j</artifactId> <version>1.2.16</version>
-            </dependency>
-
-        </dependency>-->
-        <!--================================================================= -->
-        <!-- TEST -->
-        <!--================================================================= -->
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>2.5.6.SEC02</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-</project>
