@@ -59,7 +59,7 @@ public class GSLayerEncoder21Test {
 	}
 
 	
-	@Test
+	//@Test
 	public void testMetadata(){
 		List<Element> metaElements = layerEncoder.getRoot().getChild("metadata").getChildren();
 		for(Element el : metaElements){
