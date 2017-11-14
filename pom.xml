@@ -78,7 +78,7 @@
 		<connection>scm:git:git@github.com:glascaleia/geoserver-manager.git</connection>
         <url>scm:git:git@github.com:glascaleia/geoserver-manager.git</url>
         <developerConnection>scm:git:git@github.com:glascaleia/geoserver-manager.git</developerConnection>
-	  <tag>v1.7</tag>
+	  <tag>1.11.x</tag>
   </scm>
 
 
