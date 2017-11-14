@@ -20,7 +20,7 @@
 
 	<groupId>it.geosolutions</groupId>
 	<artifactId>geoserver-manager</artifactId>
-	<version>1.7-SNAPSHOT</version>
+	<version>1.7</version>
 
 	<packaging>jar</packaging>
 
@@ -78,7 +78,8 @@
 		<connection>scm:git:git@github.com:glascaleia/geoserver-manager.git</connection>
         <url>scm:git:git@github.com:glascaleia/geoserver-manager.git</url>
         <developerConnection>scm:git:git@github.com:glascaleia/geoserver-manager.git</developerConnection>
-	</scm>
+	  <tag>v1.7</tag>
+  </scm>
 
 
 <distributionManagement>
